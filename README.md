@@ -1,20 +1,18 @@
-# Project XXX - YYY
-
-> Replace XXX with your group number. Replace YYY with your project's name.
+# Project 13 - To do list
 
 # Abstract
 
 > Briefly describe your project with 250 words at most. Example: This project implements a service that provides dinner tables to philosophers, which they can use to do their usual business, namely Just Eat & Think. The service works as follows...
 
+This project is a multi-user task manager that support multiple shared to-do lists. Users can join one or more lists and collaboratively create task, assign or reassign ownership, and update task status (TODO / In progress / Done). The system will be consistent under concurrent access by multiple clients.
 # Contributors
 
-> Replace your names and email addressses below
-
 Project contributors:
-* Alice (s000001@student.dtu.dk)
-* Bob (s000001@student.dtu.dk)
-* Charlize (s000001@student.dtu.dk)
-* Dave (s000001@student.dtu.dk)
+* Patrick Røbel (s194870@dtu.dk)
+* Lizette Bloch Dahl Nikolajsen (s235225@dtu.dk)
+* Kajsa Alice Ulrika Berlstedt (s235271@dtu.dk)
+* Johan Holm Hansen (s226898@dtu.dk)
+
 
 > Indicate the name of main people contributing to each part of the project below (keep the bullet points!). Note that the report as a whole is under the joint responsibility of the entire
 group. 
