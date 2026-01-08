@@ -1,0 +1,43 @@
+Build / Test: 
+mvn clean test (from client or server folders) 
+"cd client; mvn clean test"
+"cd server; mvn clean test"
+
+RUN / START 
+Run server: mvn -pl server exec:java        (from repo root)
+Run client: mvn -pl client javafx:run       (from repo root)
+
+Projects fixes:
+cntrl + shift + p:
+"Maven: Reload Projects"
+"Java: Clean Java Language Server Workspace"   -> reload Language
+
+Prerequisites
+-------------
+- Install JDK 17
+- Install Apache Maven ("mvn" on PATH)
+
+Check in PowerShell
+-------------------
+- java -version
+- mvn -version
+
+Build / Test (from repo root)
+----------------------------
+- mvn clean test
+- If you just want a build artifact: mvn clean package
+
+
+RUN PROGRAMS
+------------
+Open two terminals (recommended): one for server, one for client.
+
+Server (from repo root):
+- mvn -pl server exec:java
+
+Client (from repo root):
+- mvn -pl client javafx:run
+
+Alternative (run from module folders):
+- cd server; mvn exec:java
+- cd client; mvn javafx:run

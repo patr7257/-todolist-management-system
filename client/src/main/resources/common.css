@@ -1,0 +1,22 @@
+/*
+COMMON STYLESHEET for the JavaFX client application
+
+consistent look: use CSS for colors, fonts, borders, backgrounds,
+hover/pressed states, and use code/FXML for layout and logic
+*/
+
+.root {
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+    -fx-background-color: #f0f0f0;
+}
+.button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-padding: 10 20 10 20;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+.button:hover {
+    -fx-background-color: #45a049;
+}

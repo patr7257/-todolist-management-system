@@ -1,0 +1,9 @@
+/*
+CSS styling specific to the lobby scene
+
+Dont duplicate styles already defined in common.css
+*/
+
+.lobby-background {
+    -fx-background-color: #e0e0e0;
+}
