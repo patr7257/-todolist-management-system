@@ -125,6 +125,32 @@ public class Methods {
 		}
 	}
 
+	// Wait for any response with this requestId (OK or ERROR) and treat ERROR as
+	// exception.
+	private static Object[] waitForOk(RemoteSpace responses, String requestId) throws Exception {
+		Object[] tuple = responses.get(
+				new FormalField(Object.class), // resp code (OK / ERROR / etc.)
+				new ActualField(requestId),
+				new FormalField(Object.class),
+				new FormalField(Object.class),
+				new FormalField(Object.class),
+				new FormalField(Object.class));
+
+		Object code = tuple[0];
+
+		if (TupleSpaces.RESP_OK.equals(code)) {
+			return tuple;
+		}
+
+		if (TupleSpaces.RESP_ERROR.equals(code)) {
+			// assuming error message at index 2
+			String msg = tuple[2] != null ? tuple[2].toString() : "unknown error";
+			throw new RuntimeException("Server error for request " + requestId + ": " + msg);
+		}
+
+		throw new RuntimeException("Unexpected response code for request " + requestId + ": " + code);
+	}
+
 	public static void loadTasksForList(
 			Label statusLabel,
 			Button refreshButton,
@@ -138,7 +164,8 @@ public class Methods {
 			try {
 				RemoteSpace tasks = new RemoteSpace(tasksUri);
 
-				// Tuple: listId:String, taskId:String, title:String, owner:String, status:String)
+				// Tuple: listId:String, taskId:String, title:String, owner:String,
+				// status:String)
 				List<Object[]> tuples = tasks.queryAll(
 						new ActualField(listId),
 						new FormalField(String.class),
@@ -168,63 +195,57 @@ public class Methods {
 		}, "load-tasks-for-list").start();
 	}
 
-public static void addTaskToList(
-    Label statusLabel,
-    Button addTaskButton,
-    String tasksUri,
-    String requestsUri,
-    String responsesUri,
-    Button refreshButton,
-    ListView<TaskEntry> tasksView,
-    String listId,
-    String taskTitle,
-    String taskOwner) {
+	public static void addTaskToList(
+			Label statusLabel,
+			Button addTaskButton,
+			String tasksUri,
+			String requestsUri,
+			String responsesUri,
+			Button refreshButton,
+			ListView<TaskEntry> tasksView,
+			String listId,
+			String taskTitle,
+			String taskOwner) {
 
-    if (taskTitle == null || taskTitle.isBlank()) {
-        setStatus(statusLabel, "Enter a task title");
-        return;
-    }
-
-    Platform.runLater(() -> {
-        statusLabel.setText("Adding task...");
-        addTaskButton.setDisable(true);
-    });
-
-    new Thread(() -> {
-		String requestId = UUID.randomUUID().toString();
-		try {
-			RemoteSpace requests = new RemoteSpace(requestsUri);
-			RemoteSpace responses = new RemoteSpace(responsesUri);
-
-			// Use server's task_add endpoint so server controls IDs and responds back
-			requests.put(TupleSpaces.CMD_TASK_ADD, requestId, listId, taskTitle == null ? "" : taskTitle,
-					taskOwner == null ? "" : taskOwner, "");
-
-			// Wait for server response correlated by requestId
-			Object[] resp = responses.get(
-					new ActualField(TupleSpaces.RESP_OK),
-					new ActualField(requestId),
-					new FormalField(String.class),
-					new FormalField(String.class),
-					new FormalField(String.class),
-					new FormalField(String.class));
-
-			String returnedTaskId = resp.length > 3 && resp[3] instanceof String ? (String) resp[3] : null;
-
-			Platform.runLater(() -> {
-				setStatus(statusLabel, returnedTaskId != null ? "Task added" : "Task added (no id returned)");
-				addTaskButton.setDisable(false);
-				// Refresh tasks now that server confirmed add
-				loadTasksForList(statusLabel, refreshButton, tasksView, tasksUri, listId);
-			});
-		} catch (Exception ex) {
-			Platform.runLater(() -> {
-				setStatus(statusLabel, "Adding task failed: " + ex.getMessage());
-				addTaskButton.setDisable(false);
-			});
+		if (taskTitle == null || taskTitle.isBlank()) {
+			setStatus(statusLabel, "Enter a task title");
+			return;
 		}
-	}, "add-task-via-requests").start();
-}
+
+		Platform.runLater(() -> {
+			statusLabel.setText("Adding task...");
+			addTaskButton.setDisable(true);
+		});
+
+		new Thread(() -> {
+			String requestId = UUID.randomUUID().toString();
+			try {
+				RemoteSpace requests = new RemoteSpace(requestsUri);
+				RemoteSpace responses = new RemoteSpace(responsesUri);
+
+				// Use server's task_add endpoint so server controls IDs and responds back
+				requests.put(TupleSpaces.CMD_TASK_ADD, requestId, listId, taskTitle == null ? "" : taskTitle,
+						taskOwner == null ? "" : taskOwner, "");
+
+				// Wait for server response correlated by requestId
+				Object[] resp = waitForOk(responses, requestId);
+
+				String returnedTaskId = resp.length > 3 && resp[3] instanceof String ? (String) resp[3] : null;
+
+				Platform.runLater(() -> {
+					setStatus(statusLabel, returnedTaskId != null ? "Task added" : "Task added (no id returned)");
+					addTaskButton.setDisable(false);
+					// Refresh tasks now that server confirmed add
+					loadTasksForList(statusLabel, refreshButton, tasksView, tasksUri, listId);
+				});
+			} catch (Exception ex) {
+				Platform.runLater(() -> {
+					setStatus(statusLabel, "Adding task failed: " + ex.getMessage());
+					addTaskButton.setDisable(false);
+				});
+			}
+		}, "add-task-via-requests").start();
+	}
 
 	public static void changeTaskStatus(
 			Label statusLabel,
@@ -250,13 +271,7 @@ public static void addTaskToList(
 				requests.put(TupleSpaces.CMD_TASK_STATUS, requestId, listId, taskId, newStatus, "");
 
 				// Wait for server response correlated by requestId
-				Object[] resp = responses.get(
-						new ActualField(TupleSpaces.RESP_OK),
-						new ActualField(requestId),
-						new FormalField(String.class),
-						new FormalField(String.class),
-						new FormalField(String.class),
-						new FormalField(String.class));
+				Object[] resp = waitForOk(responses, requestId);
 
 				Platform.runLater(() -> {
 					setStatus(statusLabel, "Task status changed");
@@ -339,13 +354,7 @@ public static void addTaskToList(
 				requests.put(TupleSpaces.CMD_TASK_ASSIGN, requestId, listId, taskId, owner == null ? "" : owner, "");
 
 				// Wait for server response correlated by requestId
-				Object[] resp = responses.get(
-						new ActualField(TupleSpaces.RESP_OK),
-						new ActualField(requestId),
-						new FormalField(String.class),
-						new FormalField(String.class),
-						new FormalField(String.class),
-						new FormalField(String.class));
+				Object[] resp = waitForOk(responses, requestId);
 
 				Platform.runLater(() -> {
 					setStatus(statusLabel, "Assigned");
@@ -384,13 +393,7 @@ public static void addTaskToList(
 				requests.put(TupleSpaces.CMD_LIST_CREATE, requestId, listName, "", "", "");
 
 				// Wait for server response correlated by requestId
-				Object[] resp = responses.get(
-						new ActualField(TupleSpaces.RESP_OK),
-						new ActualField(requestId),
-						new FormalField(Object.class),
-						new FormalField(Object.class),
-						new FormalField(Object.class),
-						new FormalField(Object.class));
+				Object[] resp = waitForOk(responses, requestId);
 
 				// resp[2]=listId, resp[3]=listName (if provided by server)
 				String createdId = resp.length > 2 && resp[2] instanceof String ? (String) resp[2] : null;
