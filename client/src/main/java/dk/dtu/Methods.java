@@ -3,6 +3,7 @@ package dk.dtu;
 import dk.dtu.shared.TupleSpaces;
 import javafx.application.Platform;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import java.util.function.Consumer;
@@ -124,7 +125,8 @@ public class Methods {
 
 		@Override
 		public String toString() {
-			return title + owner + " " + "[" + status + "]";
+			String who = (owner == null || owner.isBlank()) ? " " : "@" + owner;
+			return title + " " + who + " " + "[" + status + "]";
 		}
 	}
 
@@ -399,6 +401,35 @@ public class Methods {
         }
     }, "task-delete").start();
 }
+
+	public static void loadUsersIntoComboBox(
+        Label statusLabel,
+        ComboBox<String> usersComboBox,
+        String usersUri
+	) {
+		new Thread(() -> {
+			try {
+				RemoteSpace users = new RemoteSpace(usersUri);
+
+				List<Object[]> tuples = users.queryAll(new FormalField(String.class));
+
+				Platform.runLater(() -> {
+					usersComboBox.getItems().clear();
+					for (Object[] t : tuples) {
+						usersComboBox.getItems().add((String) t[0]);
+					}
+					if (!usersComboBox.getItems().isEmpty() && usersComboBox.getValue() == null) {
+						usersComboBox.setValue(usersComboBox.getItems().get(0));
+					}
+					setStatus(statusLabel, "Loaded " + tuples.size() + " users");
+				});
+
+			} catch (Exception ex) {
+				Platform.runLater(() -> setStatus(statusLabel, "Failed to load users: " + ex.getMessage()));
+			}
+		}, "load-users").start();
+	}
+
 
 	public static void createToDoList(Label statusLabel, Button createToDoListButton, String requestsUri,
 			String responsesUri, String listName) {
