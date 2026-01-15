@@ -42,6 +42,12 @@ public class E_TaskView {
 
         statusLabel = new Label("");
 
+        ComboBox<String> assigneeComboBox = new ComboBox<>();
+        assigneeComboBox.setPromptText("Select assignee");
+
+        Methods.loadUsersIntoComboBox(statusLabel, assigneeComboBox, Config.getUsersUri());
+
+
         // Task ListView
         tasksView = new ListView<>();
         tasksView.setPrefHeight(200);
@@ -52,6 +58,11 @@ public class E_TaskView {
         
         Button addTaskButton = new Button("Add Task");
         addTaskButton.setOnAction(e -> {
+            String selectedAssignee = assigneeComboBox.getValue();
+            if (selectedAssignee == null || selectedAssignee.isBlank()) {
+                Methods.setStatus(statusLabel, "Select an assignee");
+                return;
+            }
             Methods.addTaskToList(
                 statusLabel,
                 addTaskButton,
@@ -59,7 +70,7 @@ public class E_TaskView {
                 Config.getResponsesUri(),
                 listId,
                 newTaskField.getText(),
-                navigator.getCurrentUser()
+                selectedAssignee
             );
             newTaskField.clear();
         });
@@ -94,9 +105,6 @@ public class E_TaskView {
         });
 
         // Assign task section
-        TextField assignField = new TextField();
-        assignField.setPromptText("Assign to user");
-        
         Button assignButton = new Button("Assign");
         assignButton.setOnAction(e -> {
             TaskEntry selectedTask = tasksView.getSelectionModel().getSelectedItem();
@@ -104,16 +112,24 @@ public class E_TaskView {
                 Methods.setStatus(statusLabel, "No task selected");
                 return;
             }
+
+            String selectedAssignee = assigneeComboBox.getValue();
+            if (selectedAssignee == null || selectedAssignee.isBlank()) {
+                Methods.setStatus(statusLabel, "Select an assignee");
+                return;
+            }
+
             Methods.assignTaskToList(
-                statusLabel, 
-                assignButton, 
-                Config.getRequestsUri(), 
+                statusLabel,
+                assignButton,
+                Config.getRequestsUri(),
                 Config.getResponsesUri(),
-                listId, 
-                selectedTask.id, 
-                assignField.getText());
-            assignField.clear();
+                listId,
+                selectedTask.id,
+                selectedAssignee
+            );
         });
+
 
         Button deleteButton = new Button("Delete");
         deleteButton.setOnAction(e -> {
@@ -145,8 +161,9 @@ public class E_TaskView {
         HBox statusBox = new HBox(8, statusComboBox, changeStatusButton);
         statusBox.setAlignment(Pos.CENTER);
 
-        HBox assignBox = new HBox(8, assignField, assignButton);
+        HBox assignBox = new HBox(8, assigneeComboBox, assignButton);
         assignBox.setAlignment(Pos.CENTER);
+
 
         HBox deleteBox = new HBox(8, deleteButton);
         deleteBox.setAlignment(Pos.CENTER);

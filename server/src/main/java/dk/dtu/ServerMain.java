@@ -26,8 +26,8 @@ public class ServerMain {
             repo.add(TupleSpaces.USERS, users);
 
             // optional: lav nogle testbrugere
-            users.put("alice");
-            users.put("bob");
+            users.put("Alice");
+            users.put("Bob");
 
             // Tasks space 
             SequentialSpace tasks = new SequentialSpace();

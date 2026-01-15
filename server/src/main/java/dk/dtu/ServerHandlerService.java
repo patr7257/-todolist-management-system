@@ -98,7 +98,7 @@ public class ServerHandlerService implements Runnable {
         String listId = (req.a1() instanceof String) ? (String) req.a1() : null;
 
         String title = (req.a2() instanceof String) ? (String) req.a2() : null;
-        String owner = (req.a3() instanceof String) ? (String) req.a3() : null;
+        String assignee = (req.a4() instanceof String) ? (String) req.a4() : "";
 
         if (listId == null || title == null) {
             return;
@@ -107,7 +107,7 @@ public class ServerHandlerService implements Runnable {
         String taskId = UUID.randomUUID().toString();
         String status = "TODO";
         try {
-            tasks.put(listId, taskId, title, owner == null ? "" : owner, status);
+            tasks.put(listId, taskId, title, assignee, status);
             System.out.println("Task added: " + title);
 
             // send OK response back
@@ -151,18 +151,15 @@ public class ServerHandlerService implements Runnable {
         }
 
         String title = (String) existing[2];
-        String owner = (String) existing[3];
+        String assignee = (String) existing[3];
 
-        tasks.put(listId, taskId, title, owner, newStatus);
+        tasks.put(listId, taskId, title, assignee, newStatus);
         responses.put(TupleSpaces.RESP_OK, requestId, listId, taskId, title, newStatus);
         
         // Broadcast notification to all clients
         notifications.put(TupleSpaces.NOTIFY_DATA_CHANGED, System.currentTimeMillis(), "task_status", listId, taskId, "");
 
         System.out.println("Task status updated: " + newStatus);
-    }
-
-    private void handleTaskAssign(Request req) {
     }
 
     private void handleListsGet(Request req) throws InterruptedException {
@@ -200,9 +197,10 @@ public class ServerHandlerService implements Runnable {
 
             String taskId = (String) t[1];
             String title = (String) t[2];
+            String assignee = (String) t[3];
             String status = (String) t[4];
 
-            responses.put(TupleSpaces.RESP_OK, requestId, listId, taskId, title, status);
+            responses.put(TupleSpaces.RESP_OK, requestId, listId, taskId, title + "\t" + assignee, status);
         }
         responses.put(TupleSpaces.RESP_OK, requestId, "END", "", "", "");
     }
@@ -259,6 +257,55 @@ public class ServerHandlerService implements Runnable {
         // Broadcast notification to all clients
         notifications.put(TupleSpaces.NOTIFY_DATA_CHANGED, System.currentTimeMillis(), "list_delete", listId, removedName, "");
     }
+
+    private void handleTaskAssign(Request req) {
+        String requestId = req.requestId();
+        String listId = (req.a1() instanceof String) ? (String) req.a1() : null;
+        String taskId = (req.a2() instanceof String) ? (String) req.a2() : null;
+        String newAssignee = (req.a3() instanceof String) ? (String) req.a3() : null;
+    
+        if (listId == null || taskId == null || newAssignee == null) {
+            try { responses.put(TupleSpaces.RESP_ERROR, requestId, "Invalid parameters", "", "", ""); }
+            catch (InterruptedException ignored) {}
+            return;
+        }
+    
+        try {
+            // Validate assignee exists in users (hardcoded)
+            Object[] u = users.queryp(new ActualField(newAssignee));
+            if (u == null) {
+                responses.put(TupleSpaces.RESP_ERROR, requestId, "Unknown assignee", listId, taskId, newAssignee);
+                return;
+            }
+    
+            Object[] existing = tasks.getp(
+                    new ActualField(listId),
+                    new ActualField(taskId),
+                    new FormalField(String.class), // title
+                    new FormalField(String.class), // assignee
+                    new FormalField(String.class)  // status
+            );
+    
+            if (existing == null) {
+                responses.put(TupleSpaces.RESP_ERROR, requestId, "Task not found", listId, taskId, "");
+                return;
+            }
+    
+            String title = (String) existing[2];
+            String status = (String) existing[4];
+    
+            tasks.put(listId, taskId, title, newAssignee, status);
+    
+            responses.put(TupleSpaces.RESP_OK, requestId, listId, taskId, newAssignee, "OK");
+    
+            notifications.put(TupleSpaces.NOTIFY_DATA_CHANGED, System.currentTimeMillis(),
+                    "task_assign", listId, taskId, newAssignee);
+    
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    
 
     private record Request(String cmd, String requestId, Object a1, Object a2, Object a3, Object a4) {
         static Request fromTuple(Object[] tuple) {
