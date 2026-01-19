@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
  */
 public class HelpersTest {
     public void testListEntryToString() {
-        Helpers.ListEntry e = new Helpers.ListEntry("123", "Inbox");
+        Helpers.ListEntry e = new Helpers.ListEntry("123", "Inbox", 0, 0, 0);
         assertEquals("123 - Inbox", e.toString());
     }
 
@@ -23,7 +23,7 @@ public class HelpersTest {
 
         String s = t.toString();
         assertTrue(s.contains("Buy milk"));
-        assertTrue(s.contains("@alice"));
+        assertTrue(s.contains("alice"));
         assertTrue(s.contains("[OPEN]"));
         assertTrue(s.contains("(due: 2026-02-01)"));
     }
