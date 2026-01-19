@@ -7,23 +7,8 @@ public final class Config {
     // OWN MACHINE LOCALLY
     public static final String SERVER_IP = "127.0.0.1";
     
-    // JOHAN tlf internetdeling:
-    // public static final String SERVER_IP = "172.20.10.2";
-    
-    // JOHAN IP:
+    // HOME IP (check your local IP with "ipconfig" or "ifconfig"):
     // public static final String SERVER_IP = "192.168.0.15";
-
-    // PATRICK IP:
-    //public static final String SERVER_IP = "192.168.0.74";
-    
-    // KAJSA IP:
-    // public static final String SERVER_IP = "192.168.0.09";
-
-    // DTU Secure:
-    //public static final String SERVER_IP = "127.0.0.1";
-
-    // VPN to DTU:
-    //public static final String SERVER_IP = "127.0.0.1";
 
     public static final int PORT = 9001;                        // Port for jSpace server
     public static final String SERVER_BIND_HOST = "0.0.0.0";    // Bind to all interfaces
