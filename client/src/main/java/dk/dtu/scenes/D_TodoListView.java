@@ -292,27 +292,37 @@ public class D_TodoListView {
                     Helpers.TaskEntry item = getItem();
                     if (item == null) return;
 
-                    deleteButton.setDisable(true);
+                    // Show confirmation dialog
+                    Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+                    confirmAlert.setTitle("Delete Task");
+                    confirmAlert.setHeaderText("Are you sure you want to delete this task?");
+                    confirmAlert.setContentText("Task: " + item.title + "\nThis action cannot be undone.");
+                    
+                    confirmAlert.showAndWait().ifPresent(response -> {
+                        if (response == ButtonType.OK) {
+                            deleteButton.setDisable(true);
 
-                    new Thread(() -> {
-                        try {
-                            Tasks.deleteTask(
-                                    Config.getRequestsUri(),
-                                    Config.getResponsesUri(),
-                                    item.id
-                            );
+                            new Thread(() -> {
+                                try {
+                                    Tasks.deleteTask(
+                                            Config.getRequestsUri(),
+                                            Config.getResponsesUri(),
+                                            item.id
+                                    );
 
-                            Platform.runLater(() -> {
-                                deleteButton.setDisable(false);
-                                Tasks.loadTasksForList(tasksView, Config.getTasksUri(), listId);
-                            });
+                                    Platform.runLater(() -> {
+                                        deleteButton.setDisable(false);
+                                        Tasks.loadTasksForList(tasksView, Config.getTasksUri(), listId);
+                                    });
 
-                        } catch (Exception ex) {
-                            System.out.println("[CLIENT] ERROR deleting task:");
-                            ex.printStackTrace();
-                            Platform.runLater(() -> deleteButton.setDisable(false));
+                                } catch (Exception ex) {
+                                    System.out.println("[CLIENT] ERROR deleting task:");
+                                    ex.printStackTrace();
+                                    Platform.runLater(() -> deleteButton.setDisable(false));
+                                }
+                            }, "delete-task").start();
                         }
-                    }, "delete-task").start();
+                    });
                 });
             }
 

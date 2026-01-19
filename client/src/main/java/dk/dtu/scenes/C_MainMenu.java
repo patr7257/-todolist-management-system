@@ -8,13 +8,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -47,29 +41,39 @@ public class C_MainMenu {
         logoutButton.setGraphic(logoutIcon);
         logoutButton.getStyleClass().add("go-back-button");
         logoutButton.setOnAction(e -> {
-            String username = navigator.getCurrentUser();
-            if (username == null || username.isEmpty()) {
-                username = "unknown";
-            }
-            System.out.println("User logged out: " + username);
+            // Show confirmation dialog
+            Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmAlert.setTitle("Confirm Logout");
+            confirmAlert.setHeaderText("Are you sure you want to log out?");
+            confirmAlert.setContentText("You will be returned to the login screen.");
             
-            // Send logout notification to server (capture username before clearing)
-            final String usernameToSend = username;
-            new Thread(() -> {
-                try {
-                    org.jspace.RemoteSpace requests = new org.jspace.RemoteSpace(Config.getRequestsUri());
-                    requests.put(dk.dtu.shared.TupleSpaces.CMD_USER_LOGOUT,
-                            java.util.UUID.randomUUID().toString(),
-                            usernameToSend, 
-                            "", 
-                            "", 
-                            "");
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+            confirmAlert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    String username = navigator.getCurrentUser();
+                    if (username == null || username.isEmpty()) {
+                        username = "unknown";
+                    }
+                    System.out.println("User logged out: " + username);
+                    
+                    // Send logout notification to server (capture username before clearing)
+                    final String usernameToSend = username;
+                    new Thread(() -> {
+                        try {
+                            org.jspace.RemoteSpace requests = new org.jspace.RemoteSpace(Config.getRequestsUri());
+                            requests.put(dk.dtu.shared.TupleSpaces.CMD_USER_LOGOUT,
+                                    java.util.UUID.randomUUID().toString(),
+                                    usernameToSend, 
+                                    "", 
+                                    "", 
+                                    "");
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }, "logout").start();
+                    
+                    navigator.showLogin();
                 }
-            }, "logout").start();
-            
-            navigator.showLogin();
+            });
         }); // only set once
 
         // Put logout icon top-right in a full-width bar
@@ -227,17 +231,26 @@ public class C_MainMenu {
                     if (item == null)
                         return;
 
-                    System.out.println("Delete list: " + item.id + " - " + item.name);
-
-                    new Thread(() -> {
-                        try {
-                            Lists.deleteTodoList(Config.getRequestsUri(), Config.getResponsesUri(), item.id);
-                            Platform.runLater(() -> Lists.loadTodoLists(listsView, Config.getTodoListsUri()));
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }, "delete-list").start();
+                    // Show confirmation dialog
+                    Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+                    confirmAlert.setTitle("Delete List");
+                    confirmAlert.setHeaderText("Are you sure you want to delete this list?");
+                    confirmAlert.setContentText("List: " + item.name + "\nThis action cannot be undone.");
                     
+                    confirmAlert.showAndWait().ifPresent(response -> {
+                        if (response == ButtonType.OK) {
+                            System.out.println("Delete list: " + item.id + " - " + item.name);
+
+                            new Thread(() -> {
+                                try {
+                                    Lists.deleteTodoList(Config.getRequestsUri(), Config.getResponsesUri(), item.id);
+                                    Platform.runLater(() -> Lists.loadTodoLists(listsView, Config.getTodoListsUri()));
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                }
+                            }, "delete-list").start();
+                        }
+                    });
                 });
             }
 
