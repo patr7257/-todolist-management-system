@@ -45,9 +45,6 @@ public class D_TodoListView {
         Label title = new Label("Tasks in: " + listName);
         title.getStyleClass().add("todolist-title");
 
-        Label subtitle = new Label("Overview of all tasks in this list");
-        subtitle.getStyleClass().add("todolist-subtitle");
-
         Label info = new Label("List ID: " + listId);
         info.getStyleClass().add("todolist-meta");
 
@@ -385,7 +382,7 @@ public class D_TodoListView {
         topBar.setPadding(new Insets(0, 0, 10, 0));
         topBar.setMaxWidth(Double.MAX_VALUE); // allow it to stretch
 
-        VBox titleSection = new VBox(5, title, subtitle, info);
+        VBox titleSection = new VBox(5, title, info);
         titleSection.setAlignment(Pos.TOP_CENTER);
         
         VBox root = new VBox(
