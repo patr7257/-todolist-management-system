@@ -11,6 +11,9 @@ public class ServerMain {
 
     public static void main(String[] args) {
         try {
+            // Initialize persistence service
+            PersistenceService persistenceService = new PersistenceService();
+            
             SpaceRepository repo = new SpaceRepository();
 
             SequentialSpace todoLists = new SequentialSpace();
@@ -38,8 +41,14 @@ public class ServerMain {
             SequentialSpace notifications = new SequentialSpace();
             repo.add(TupleSpaces.NOTIFICATIONS, notifications);
 
-            // Load preset data into the system
-            Database.loadDatabase(users, todoLists, tasks);
+            // Try to load existing session, fallback to preset data if none exists
+            boolean sessionLoaded = persistenceService.loadSession(users, todoLists, tasks);
+            if (!sessionLoaded) {
+                System.out.println("Loading preset database...");
+                Database.loadDatabase(users, todoLists, tasks);
+                // Save the preset data
+                persistenceService.saveSession(users, todoLists, tasks);
+            }
 
             // Open a gate so RemoteSpace clients can connect
             repo.addGate(Config.getServerGateUri());
@@ -49,10 +58,18 @@ public class ServerMain {
 
             System.out.println("Server started on " + Config.SERVER_IP + ":" + Config.PORT + ".\nWaiting for client requests...");
 
-            ServerHandlerService service = new ServerHandlerService(todoLists, counter, users, tasks, requests, responses, notifications);
+            ServerHandlerService service = new ServerHandlerService(todoLists, counter, users, tasks, requests, responses, notifications, persistenceService);
             Thread requestLoop = new Thread(service, "request-loop");
             requestLoop.setDaemon(false);
             requestLoop.start();
+            
+            // Add shutdown hook to save data on exit
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println("\nShutting down server...");
+                persistenceService.saveSession(users, todoLists, tasks);
+                System.out.println("Server stopped.");
+            }, "shutdown-hook"));
+            
             // Keep the server process alive
             while (true) {
                 Thread.sleep(60_000);
