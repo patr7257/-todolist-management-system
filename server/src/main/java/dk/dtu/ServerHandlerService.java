@@ -17,9 +17,10 @@ public class ServerHandlerService implements Runnable {
     private final Space requests;
     private final Space responses;
     private final Space notifications;
+    private final PersistenceService persistenceService;
 
     public ServerHandlerService(Space todoLists, Space counter, Space users, Space tasks, Space requests,
-            Space responses, Space notifications) {
+            Space responses, Space notifications, PersistenceService persistenceService) {
         this.todoLists = todoLists;
         this.counter = counter;
         this.users = users;
@@ -27,6 +28,7 @@ public class ServerHandlerService implements Runnable {
         this.requests = requests;
         this.responses = responses;
         this.notifications = notifications;
+        this.persistenceService = persistenceService;
     }
 
     @Override
@@ -77,6 +79,17 @@ public class ServerHandlerService implements Runnable {
     
     private void broadcastDataChange(String operation, String data1, String data2, String data3) throws InterruptedException {
         notifications.put(TupleSpaces.NOTIFY_DATA_CHANGED, System.currentTimeMillis(), operation, data1, data2, data3);
+        // Auto-save after data changes
+        autoSave();
+    }
+    
+    /**
+     * Auto-save session data asynchronously to avoid blocking request processing
+     */
+    private void autoSave() {
+        new Thread(() -> {
+            persistenceService.saveSession(users, todoLists, tasks);
+        }, "auto-save").start();
     }
     
     private void handlePing(Request req) throws InterruptedException {

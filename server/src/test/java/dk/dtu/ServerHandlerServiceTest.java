@@ -15,9 +15,10 @@ public class ServerHandlerServiceTest {
         Space requests = new SequentialSpace();
         Space responses = new SequentialSpace();
         Space notifications = new SequentialSpace();
+        PersistenceService persistenceService = new PersistenceService("./target/test-data");
 
         ServerHandlerService service = new ServerHandlerService(
-                todoLists, counter, users, tasks, requests, responses, notifications);
+                todoLists, counter, users, tasks, requests, responses, notifications, persistenceService);
 
         assertNotNull(service, "Service should be created");
         assertTrue(service instanceof Runnable, "Service should implement Runnable");
