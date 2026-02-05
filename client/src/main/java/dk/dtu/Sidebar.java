@@ -16,8 +16,10 @@ public class Sidebar extends VBox {
     
     private final SceneNavigator navigator;
     private Button homeButton;
-    private Button backButton;
     private Button themeToggleButton;
+    private Button columnFilterButton;
+    private Button listFilterButton;
+    private Button backButton;
     
     private boolean isDarkMode = false;
     private Runnable onThemeChange;
@@ -47,20 +49,25 @@ public class Sidebar extends VBox {
                 navigator.showWelcome();
             }
         });
-        
-        // Back button (second button - contextual)
-        backButton = createIconButton("/Icons/gobackicon.png", "Go Back");
-        
+
         // Theme toggle button (sun/moon icon)
         themeToggleButton = createThemeToggleButton();
         themeToggleButton.setOnAction(e -> toggleTheme());
         
-        // Add spacer to push theme toggle to bottom
-        VBox spacer = new VBox();
-        VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
-        
-        // Add buttons to sidebar with spacer between navigation and theme toggle
-        this.getChildren().addAll(homeButton, backButton, spacer, themeToggleButton);
+        // Column filter button (choose/rearrange visible columns)
+        columnFilterButton = createIconButton("/Icons/RearrangeColumn.png", "Choose columns");
+        columnFilterButton.setVisible(false);
+
+        // List/task filter button (filter visible items)
+        listFilterButton = createIconButton("/Icons/filter.png", "Filter");
+        listFilterButton.setVisible(false);
+
+        // Back button (always last)
+        backButton = createIconButton("/Icons/gobackicon.png", "Go Back");
+
+        // Add buttons in requested order:
+        // Home, Dark/Light mode, Column filter, List filter, Go Back
+        this.getChildren().addAll(homeButton, themeToggleButton, columnFilterButton, listFilterButton, backButton);
     }
     
     private Button createIconButton(String iconPath, String tooltipText) {
@@ -118,6 +125,31 @@ public class Sidebar extends VBox {
             backButton.setVisible(true);
         } else {
             backButton.setVisible(false);
+        }
+    }
+
+    /**
+     * Backwards-compatible alias: previously the single filter button was used for "Choose columns".
+     */
+    public void setFilterButtonAction(Runnable action) {
+        setColumnFilterButtonAction(action);
+    }
+
+    public void setColumnFilterButtonAction(Runnable action) {
+        if (action != null) {
+            columnFilterButton.setOnAction(e -> action.run());
+            columnFilterButton.setVisible(true);
+        } else {
+            columnFilterButton.setVisible(false);
+        }
+    }
+
+    public void setListFilterButtonAction(Runnable action) {
+        if (action != null) {
+            listFilterButton.setOnAction(e -> action.run());
+            listFilterButton.setVisible(true);
+        } else {
+            listFilterButton.setVisible(false);
         }
     }
     

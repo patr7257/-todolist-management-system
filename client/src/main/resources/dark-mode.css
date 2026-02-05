@@ -47,25 +47,28 @@ Label {
 
 .login-textfield:focused,
 .text-field:focused {
-    -fx-border-color: #4a90e2;
+    -fx-border-color: #707070;
 }
 
 /* Buttons */
 .button {
-    -fx-background-color: #4a90e2;
+    -fx-background-color: #000000;
     -fx-text-fill: white;
+    -fx-border-color: #404040;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
 }
 
 .button:hover {
-    -fx-background-color: #357abd;
+    -fx-background-color: #1a1a1a;
 }
 
 .primary-button {
-    -fx-background-color: #4a90e2;
+    -fx-background-color: #000000;
 }
 
 .primary-button:hover {
-    -fx-background-color: #357abd;
+    -fx-background-color: #1a1a1a;
 }
 
 .go-back-button {
@@ -104,7 +107,7 @@ Label {
 
 .sidebar-button:hover {
     -fx-background-color: #3d3d3d;
-    -fx-border-color: #4a90e2;
+    -fx-border-color: #707070;
     -fx-cursor: hand;
 }
 
@@ -129,8 +132,35 @@ Label {
 }
 
 .list-cell:selected {
-    -fx-background-color: #4a90e2;
+    -fx-background-color: #000000;
     -fx-text-fill: white;
+}
+
+/* Make ComboBox selection highlight neutral (not bright blue) */
+.combo-box-base,
+.combo-box {
+    -fx-background-color: #000000;
+    -fx-border-color: #404040;
+}
+
+.combo-box .list-cell:filled:selected,
+.combo-box .list-cell:filled:selected:hover,
+.combo-box-popup .list-cell:filled:selected,
+.combo-box-popup .list-cell:filled:selected:hover {
+    -fx-background-color: #000000;
+    -fx-text-fill: white;
+}
+
+/* Column delete buttons should not inherit blue-looking button styling */
+.list-col-delete-button,
+.task-col-delete-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.list-col-delete-button:hover,
+.task-col-delete-button:hover {
+    -fx-background-color: #1a1a1a;
 }
 
 .combo-box-popup .list-view {
