@@ -39,14 +39,8 @@ public class Users {
                         : "Logged in as " + username;
 
                 System.out.println(msg);
-                
-                // Notify server of user login
-                try {
-                    RemoteSpace requests = new RemoteSpace(usersUri.replace(TupleSpaces.USERS, TupleSpaces.REQUESTS));
-                    requests.put(TupleSpaces.CMD_USER_LOGIN,
-                            java.util.UUID.randomUUID().toString(),
-                            username, "", "", "");
-                } catch (Exception ignored) {}
+
+                notifyServerLogin(usersUri, username);
                 
                 Platform.runLater(() -> onSuccessMessage.accept(msg));
 
@@ -123,14 +117,8 @@ public class Users {
 
                 String msg = "Logged in as " + username;
                 System.out.println(msg);
-                
-                // Notify server of user login
-                try {
-                    RemoteSpace requests = new RemoteSpace(usersUri.replace(TupleSpaces.USERS, TupleSpaces.REQUESTS));
-                    requests.put(TupleSpaces.CMD_USER_LOGIN,
-                            java.util.UUID.randomUUID().toString(),
-                            username, "", "", "");
-                } catch (Exception ignored) {}
+
+                notifyServerLogin(usersUri, username);
                 
                 Platform.runLater(() -> onSuccessMessage.accept(msg));
 
@@ -166,14 +154,8 @@ public class Users {
                 users.put(username);
                 String msg = "New user '" + username + "' created and logged in";
                 System.out.println(msg);
-                
-                // Notify server of user login
-                try {
-                    RemoteSpace requests = new RemoteSpace(usersUri.replace(TupleSpaces.USERS, TupleSpaces.REQUESTS));
-                    requests.put(TupleSpaces.CMD_USER_LOGIN,
-                            java.util.UUID.randomUUID().toString(),
-                            username, "", "", "");
-                } catch (Exception ignored) {}
+
+                notifyServerLogin(usersUri, username);
                 
                 Platform.runLater(() -> onSuccessMessage.accept(msg));
 
@@ -200,5 +182,21 @@ public class Users {
                 "",
                 "",
                 "");
+    }
+
+    private static void notifyServerLogin(String usersUri, String username) {
+        try {
+            String requestsUri = usersUri.replace(TupleSpaces.USERS, TupleSpaces.REQUESTS);
+            RemoteSpace requests = new RemoteSpace(requestsUri);
+            requests.put(
+                    TupleSpaces.CMD_USER_LOGIN,
+                    java.util.UUID.randomUUID().toString(),
+                    username,
+                    "",
+                    "",
+                    ""
+            );
+        } catch (Exception ignored) {
+        }
     }
 }

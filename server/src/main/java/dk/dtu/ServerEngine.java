@@ -16,6 +16,8 @@ public final class ServerEngine implements AutoCloseable {
     private final PersistenceService persistenceService;
     private final SpaceRepository repo;
 
+    private final ServerHandlerService handlerService;
+
     private final SequentialSpace todoLists;
     private final SequentialSpace counter;
     private final SequentialSpace users;
@@ -37,6 +39,7 @@ public final class ServerEngine implements AutoCloseable {
             SequentialSpace requests,
             SequentialSpace responses,
             SequentialSpace notifications,
+            ServerHandlerService handlerService,
             Thread requestLoopThread
     ) {
         this.persistenceService = Objects.requireNonNull(persistenceService);
@@ -48,6 +51,7 @@ public final class ServerEngine implements AutoCloseable {
         this.requests = Objects.requireNonNull(requests);
         this.responses = Objects.requireNonNull(responses);
         this.notifications = Objects.requireNonNull(notifications);
+        this.handlerService = Objects.requireNonNull(handlerService);
         this.requestLoopThread = Objects.requireNonNull(requestLoopThread);
     }
 
@@ -62,6 +66,8 @@ public final class ServerEngine implements AutoCloseable {
         try {
             SequentialSpace todoLists = new SequentialSpace();
             repo.add(TupleSpaces.LISTS, todoLists);
+            // Backward-compatible alias (older clients/configs may still use this name).
+            repo.add("todoLists", todoLists);
 
             SequentialSpace counter = new SequentialSpace();
             repo.add("counter", counter);
@@ -130,6 +136,7 @@ public final class ServerEngine implements AutoCloseable {
                     requests,
                     responses,
                     notifications,
+                    service,
                     requestLoop
             );
         } catch (Exception e) {
@@ -157,6 +164,11 @@ public final class ServerEngine implements AutoCloseable {
 
         try {
             requestLoopThread.interrupt();
+        } catch (Exception ignored) {
+        }
+
+        try {
+            handlerService.close();
         } catch (Exception ignored) {
         }
 
