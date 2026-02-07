@@ -45,6 +45,10 @@ public class Lists {
                     new FormalField(String.class),
                     new FormalField(String.class));
 
+                if (tuples == null) {
+                    tuples = java.util.Collections.emptyList();
+                }
+
                 // Query all tasks to count them per list
                 RemoteSpace tasks = new RemoteSpace(Config.getTasksUri());
                 List<Object[]> allTasks = tasks.queryAll(
@@ -59,6 +63,10 @@ public class Lists {
                     new FormalField(Integer.class),
                     new FormalField(String.class),
                     new FormalField(String.class));
+
+                if (allTasks == null) {
+                    allTasks = java.util.Collections.emptyList();
+                }
 
                 // Count tasks per list
                 Map<String, Integer> taskCounts = new HashMap<>();

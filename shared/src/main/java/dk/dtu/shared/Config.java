@@ -4,13 +4,22 @@ import java.io.File;
 
 // Shared configuration class for server and client
 public final class Config {
-    
+
     // SERVER CONFIGURATION
+<<<<<<< Updated upstream
     // NOTE: These are intentionally runtime-configurable so the packaged app can run on any PC.
     // - Client connects to:  -Dtodolist.server.ip=<ip>  (default: 127.0.0.1)
     // - Server binds on:     -Dtodolist.bind.host=<host> (default: 0.0.0.0)
     // - Both use port:       -Dtodolist.port=<port>      (default: 9001)
     // Environment variable fallbacks are also supported:
+=======
+    // Intentionally runtime-configurable so packaged apps can run on any PC.
+    // System properties:
+    // - Client connects to:  -Dtodolist.server.ip=<ip>  (default: 127.0.0.1)
+    // - Server binds on:     -Dtodolist.bind.host=<host> (default: 0.0.0.0)
+    // - Both use port:       -Dtodolist.port=<port>      (default: 9001)
+    // Environment variables fallbacks:
+>>>>>>> Stashed changes
     // - TODOLIST_SERVER_IP, TODOLIST_BIND_HOST, TODOLIST_PORT
     public static final String DEFAULT_SERVER_IP = "127.0.0.1";
     public static final int DEFAULT_PORT = 9001;
@@ -60,12 +69,16 @@ public final class Config {
         }
         return (host == null || host.isBlank()) ? DEFAULT_SERVER_BIND_HOST : host.trim();
     }
+<<<<<<< Updated upstream
     
+=======
+
+>>>>>>> Stashed changes
     // Server gate URI for jSpace
     public static String getServerGateUri() {
         return "tcp://" + getServerBindHost() + ":" + getPort() + "/?keep";
     }
-    
+
     // CLIENT CONFIGURATION
     // Base URI for client connections
     public static String getClientBaseUri() {
@@ -74,7 +87,7 @@ public final class Config {
     
     // Client URI for todoLists space
     public static String getTodoListsUri() {
-        return getClientBaseUri() + "todoLists?keep";
+        return getClientBaseUri() + TupleSpaces.LISTS + "?keep";
     }
     
     // Client URI for users space

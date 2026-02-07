@@ -50,6 +50,10 @@ public class Tasks {
                     new FormalField(String.class),
                     new FormalField(String.class));
 
+                if (tuples == null) {
+                    tuples = java.util.Collections.emptyList();
+                }
+
                 tuples.sort(Comparator.comparingInt(t -> (t[8] instanceof Integer i) ? i : 0));
                 List<Helpers.TaskEntry> entries = new java.util.ArrayList<>(tuples.size());
 

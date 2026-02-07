@@ -66,7 +66,11 @@ public class Users {
         new Thread(() -> {
             try {
                 RemoteSpace users = new RemoteSpace(usersUri);
-                List<Object[]> tuples = users.queryAll(new FormalField(String.class));
+                List<Object[]> tuplesResult = users.queryAll(new FormalField(String.class));
+                if (tuplesResult == null) {
+                    tuplesResult = java.util.Collections.emptyList();
+                }
+                final List<Object[]> tuples = tuplesResult;
 
                 Platform.runLater(() -> {
                     String previousValue = usersComboBox.getValue();
