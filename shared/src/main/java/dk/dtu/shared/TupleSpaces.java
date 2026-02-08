@@ -59,6 +59,11 @@ public final class TupleSpaces {
     public static final String CMD_LIST_ORDER_BULK_SET = "list_order_bulk_set";
     /** Persist manual order of tasks within a list. a1 = listId, a2 = JSON array of taskIds in desired order. */
     public static final String CMD_TASK_ORDER_BULK_SET = "task_order_bulk_set";
+    
+    /** Export session data to a custom file path. a1 = filePath */
+    public static final String CMD_EXPORT_SESSION = "export_session";
+    /** Import session data from a custom file path. a1 = filePath */
+    public static final String CMD_IMPORT_SESSION = "import_session";
 
     // Response status (first field in response tuples).
     public static final String RESP_OK = "ok";

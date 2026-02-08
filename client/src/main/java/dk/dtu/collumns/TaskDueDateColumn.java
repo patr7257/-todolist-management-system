@@ -53,7 +53,7 @@ public class TaskDueDateColumn implements Column<Helpers.TaskEntry> {
             duePicker.getEditor().setAlignment(Pos.CENTER);
         } catch (Exception ignored) {
         }
-
+        
         duePicker.setOnAction(evt -> {
             Helpers.TaskEntry item = cell.getItem();
             if (item == null) return;

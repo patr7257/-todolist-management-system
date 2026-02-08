@@ -102,6 +102,8 @@ public class ServerHandlerService implements Runnable {
                     case TupleSpaces.CMD_TASK_DESCRIPTION_SET -> handleTaskDescriptionSet(req);
                     case TupleSpaces.CMD_LIST_ORDER_BULK_SET -> handleListOrderBulkSet(req);
                     case TupleSpaces.CMD_TASK_ORDER_BULK_SET -> handleTaskOrderBulkSet(req);
+                    case TupleSpaces.CMD_EXPORT_SESSION -> handleExportSession(req);
+                    case TupleSpaces.CMD_IMPORT_SESSION -> handleImportSession(req);
                     default -> System.out.println("Unknown command: " + req.cmd());
                 }
             }
@@ -1472,6 +1474,48 @@ public class ServerHandlerService implements Runnable {
         if (value < 0) return 0;
         if (value > 9999) return 9999;
         return value;
+    }
+    
+    private void handleExportSession(Request req) throws InterruptedException {
+        String filePath = req.getString(0);
+        
+        if (filePath == null || filePath.isBlank()) {
+            sendErrorResponse(req.requestId(), "Invalid file path for export", "", "", "");
+            return;
+        }
+        
+        try {
+            boolean success = persistenceService.exportSession(users, todoLists, tasks, filePath);
+            if (success) {
+                sendOkResponse(req.requestId(), "Session exported successfully", filePath, "", "");
+            } else {
+                sendErrorResponse(req.requestId(), "Failed to export session", filePath, "", "");
+            }
+        } catch (Exception e) {
+            sendErrorResponse(req.requestId(), "Export error: " + e.getMessage(), filePath, "", "");
+        }
+    }
+    
+    private void handleImportSession(Request req) throws InterruptedException {
+        String filePath = req.getString(0);
+        
+        if (filePath == null || filePath.isBlank()) {
+            sendErrorResponse(req.requestId(), "Invalid file path for import", "", "", "");
+            return;
+        }
+        
+        try {
+            boolean success = persistenceService.importSession(users, todoLists, tasks, filePath);
+            if (success) {
+                // Broadcast that all data changed (force all clients to refresh)
+                broadcastDataChange("IMPORT", "all", "", "");
+                sendOkResponse(req.requestId(), "Session imported successfully", filePath, "", "");
+            } else {
+                sendErrorResponse(req.requestId(), "Failed to import session", filePath, "", "");
+            }
+        } catch (Exception e) {
+            sendErrorResponse(req.requestId(), "Import error: " + e.getMessage(), filePath, "", "");
+        }
     }
   
     private record Request(String cmd, String requestId, Object a1, Object a2, Object a3, Object a4) {

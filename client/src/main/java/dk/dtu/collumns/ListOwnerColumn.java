@@ -75,12 +75,15 @@ public class ListOwnerColumn implements Column<Helpers.ListEntry> {
 
             String newOwner = ownerCombo.getValue();
             if (newOwner == null) return;
+            
+            // Strip star from main users before using the value
+            String cleanOwner = newOwner.replace(" *", "");
 
-            boolean wantsAll = ALL.equals(newOwner);
+            boolean wantsAll = ALL.equals(cleanOwner);
             boolean currentlyAll = (item.owner == null || item.owner.isBlank());
             if (wantsAll && currentlyAll) return;
-            if (!wantsAll && newOwner.isBlank()) return;
-            if (!wantsAll && newOwner.equals(item.owner)) return;
+            if (!wantsAll && cleanOwner.isBlank()) return;
+            if (!wantsAll && cleanOwner.equals(item.owner)) return;
 
             ownerCombo.setDisable(true);
             new Thread(() -> {
@@ -88,7 +91,7 @@ public class ListOwnerColumn implements Column<Helpers.ListEntry> {
                     if (wantsAll) {
                         Lists.clearListOwner(Config.getRequestsUri(), Config.getResponsesUri(), item.id);
                     } else {
-                        Lists.setListOwner(Config.getRequestsUri(), Config.getResponsesUri(), item.id, newOwner);
+                        Lists.setListOwner(Config.getRequestsUri(), Config.getResponsesUri(), item.id, cleanOwner);
                     }
                     Platform.runLater(() -> {
                         ownerCombo.setDisable(false);
@@ -116,7 +119,12 @@ public class ListOwnerColumn implements Column<Helpers.ListEntry> {
                     return;
                 }
                 if (item.owner != null && !item.owner.isBlank()) {
-                    ownerCombo.setValue(item.owner);
+                    // Add star to main users for display
+                    String displayOwner = item.owner;
+                    if (dk.dtu.MainUserConfig.isMainUser(item.owner)) {
+                        displayOwner = item.owner + " *";
+                    }
+                    ownerCombo.setValue(displayOwner);
                 } else {
                     ownerCombo.setValue(ALL);
                 }

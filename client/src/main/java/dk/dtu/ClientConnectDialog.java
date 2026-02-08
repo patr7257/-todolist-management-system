@@ -56,6 +56,7 @@ public final class ClientConnectDialog {
 
         Button scanButton = new Button("Rescan");
         scanButton.setDisable(true);
+        scanButton.getStyleClass().add("secondary-button");
 
         TextField manualIpField = new TextField();
         manualIpField.setPromptText("e.g. 192.168.0.168");
@@ -72,13 +73,18 @@ public final class ClientConnectDialog {
         });
 
         Label statusLabel = new Label("");
+        statusLabel.getStyleClass().add("status-label");
+        
         Label connectPreview = new Label("");
-        connectPreview.setStyle("-fx-font-family: 'Consolas'; -fx-text-fill: #444;");
+        connectPreview.getStyleClass().add("connect-info-label");
+        connectPreview.setStyle("-fx-font-family: 'Consolas'; -fx-text-fill: #2d6cdf; -fx-font-weight: 600;");
 
         Button connectBtn = new Button("Connect");
+        connectBtn.getStyleClass().add("success-button");
         Button cancelBtn = new Button("Cancel");
+        cancelBtn.getStyleClass().add("secondary-button");
 
-        HBox modeRow = new HBox(12, new Label("Mode:"), localhostMode, scanMode, manualMode);
+        HBox modeRow = new HBox(15, new Label("Mode:"), localhostMode, scanMode, manualMode);
         modeRow.setAlignment(Pos.CENTER_LEFT);
 
         HBox hostRow = new HBox(10,
@@ -90,11 +96,17 @@ public final class ClientConnectDialog {
                 portField);
         hostRow.setAlignment(Pos.CENTER_LEFT);
 
-        HBox buttonsRow = new HBox(10, connectBtn, cancelBtn);
+        HBox buttonsRow = new HBox(12, connectBtn, cancelBtn);
         buttonsRow.setAlignment(Pos.CENTER_RIGHT);
 
-        VBox root = new VBox(10, modeRow, hostRow, statusLabel, connectPreview, buttonsRow);
-        root.setPadding(new Insets(12));
+        VBox root = new VBox(15, modeRow, hostRow, statusLabel, connectPreview, buttonsRow);
+        root.setPadding(new Insets(20));
+        root.getStyleClass().add("config-panel");
+        
+        // Wrap in a container for background color
+        StackPane container = new StackPane(root);
+        container.setStyle("-fx-background-color: #e8ebf0;");
+        container.setPadding(new Insets(20));
 
         AtomicBoolean scanning = new AtomicBoolean(false);
         AtomicBoolean scanCancel = new AtomicBoolean(false);
@@ -260,11 +272,11 @@ public final class ClientConnectDialog {
             result[0] = null;
         });
 
-        Scene scene = new Scene(root, 860, 240);
+        Scene scene = new Scene(container, 900, 300);
         stage.setScene(scene);
 
-        stage.setMinWidth(860);
-        stage.setMinHeight(240);
+        stage.setMinWidth(900);
+        stage.setMinHeight(300);
 
         updateModeUi.run();
         stage.showAndWait();

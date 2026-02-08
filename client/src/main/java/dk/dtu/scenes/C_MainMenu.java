@@ -131,7 +131,21 @@ public class C_MainMenu {
                 l.setUserData(col);
                 headerLabels.add(l);
             }
-            headerNodes.add(headerNode);
+            
+            // Wrap header in StackPane for vertical borders
+            StackPane headerWrapper = new StackPane(headerNode);
+            headerWrapper.setAlignment(Pos.CENTER);
+            headerWrapper.setMinWidth(col.prefWidth());
+            headerWrapper.setPrefWidth(col.prefWidth());
+            headerWrapper.setMaxWidth(col.prefWidth());
+            headerWrapper.getStyleClass().add("column-wrapper");
+            
+            if (PINNED_NAME_ID.equals(col.id())) {
+                HBox.setHgrow(headerWrapper, javafx.scene.layout.Priority.ALWAYS);
+                headerWrapper.setMaxWidth(Double.MAX_VALUE);
+            }
+            
+            headerNodes.add(headerWrapper);
         }
 
         HBox header = new HBox(COLUMN_GAP, headerNodes.toArray(javafx.scene.Node[]::new));
@@ -154,9 +168,7 @@ public class C_MainMenu {
         });
 
         // Let the table be as wide as needed; horizontal scrolling is handled by a ScrollPane.
-        listsView.setPrefWidth(tableWidth);
-        listsView.setMinWidth(tableWidth);
-        listsView.setMaxWidth(Double.MAX_VALUE);
+        // Do NOT set fixed widths on ListView to avoid double scrollbars
         listsView.setPrefHeight(400);
 
         // Load lists initially (previously only refreshed via notifications/user actions)
@@ -185,6 +197,7 @@ public class C_MainMenu {
                     wrapper.setMinWidth(col.prefWidth());
                     wrapper.setPrefWidth(col.prefWidth());
                     wrapper.setMaxWidth(col.prefWidth());
+                    wrapper.getStyleClass().add("column-wrapper");
 
                     cellNodes.add(wrapper);
                     if (PINNED_REORDER_ID.equals(col.id())) {
@@ -373,16 +386,23 @@ public class C_MainMenu {
     private ScrollPane createScrollableTable(HBox header, ListView<Helpers.ListEntry> listsView) {
         VBox table = new VBox(0, header, listsView);
         VBox.setVgrow(listsView, javafx.scene.layout.Priority.ALWAYS);
-        table.minWidthProperty().bind(header.minWidthProperty());
+        
+        // Set minimum width for the table based on header, but allow it to grow
+        table.setMinWidth(header.getMinWidth());
 
         ScrollPane scroll = new ScrollPane(table);
         scroll.setPannable(true);
-        // Fill remaining space when table is narrow; still allows scrolling when wider than the viewport.
-        scroll.setFitToWidth(true);
+        // Don't fit to width - allow horizontal scrolling when content is wider
+        scroll.setFitToWidth(false);
         scroll.setFitToHeight(false);
         scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         // Vertical scrolling is handled by the ListView itself.
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        
+        // Let the content determine its own size
+        listsView.setMinWidth(header.getMinWidth());
+        listsView.setPrefWidth(header.getPrefWidth());
+        
         return scroll;
     }
 
@@ -564,21 +584,55 @@ public class C_MainMenu {
             default -> "All";
         });
 
+        // Set consistent width for all combo boxes
+        double comboWidth = 200;
+        nameCombo.setPrefWidth(comboWidth);
+        ownerCombo.setPrefWidth(comboWidth);
+        yearField.setPrefWidth(comboWidth);
+        priorityCombo.setPrefWidth(comboWidth);
+        completionCombo.setPrefWidth(comboWidth);
+        locationCombo.setPrefWidth(comboWidth);
+        descriptionCombo.setPrefWidth(comboWidth);
+        hasTasksCombo.setPrefWidth(comboWidth);
+        overdueCombo.setPrefWidth(comboWidth);
+        
         GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(10));
-        grid.addRow(0, new Label("Name"), nameCombo);
-        grid.addRow(1, new Label("Owner"), ownerCombo);
-        grid.addRow(2, new Label("Year"), yearField);
-        grid.addRow(3, new Label("Priority"), priorityCombo);
-        grid.addRow(4, new Label("Completion"), completionCombo);
-        grid.addRow(5, new Label("Location"), locationCombo);
-        grid.addRow(6, new Label("Description"), descriptionCombo);
-        grid.addRow(7, new Label("Tasks"), hasTasksCombo);
-        grid.addRow(8, new Label("Overdue"), overdueCombo);
+        grid.setHgap(15);
+        grid.setVgap(12);
+        grid.setPadding(new Insets(15));
+        
+        // Make labels right-aligned and consistent width
+        double labelWidth = 90;
+        Label[] labels = {
+            new Label("Name"),
+            new Label("Owner"),
+            new Label("Year"),
+            new Label("Priority"),
+            new Label("Completion"),
+            new Label("Location"),
+            new Label("Description"),
+            new Label("Tasks"),
+            new Label("Overdue")
+        };
+        
+        for (Label label : labels) {
+            label.setPrefWidth(labelWidth);
+            label.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+        }
+        
+        grid.addRow(0, labels[0], nameCombo);
+        grid.addRow(1, labels[1], ownerCombo);
+        grid.addRow(2, labels[2], yearField);
+        grid.addRow(3, labels[3], priorityCombo);
+        grid.addRow(4, labels[4], completionCombo);
+        grid.addRow(5, labels[5], locationCombo);
+        grid.addRow(6, labels[6], descriptionCombo);
+        grid.addRow(7, labels[7], hasTasksCombo);
+        grid.addRow(8, labels[8], overdueCombo);
 
         dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().setPrefWidth(380);
+        
         ButtonType apply = new ButtonType("Apply", ButtonBar.ButtonData.OK_DONE);
         ButtonType clear = new ButtonType("Clear", ButtonBar.ButtonData.OTHER);
         dialog.getDialogPane().getButtonTypes().addAll(apply, clear, ButtonType.CANCEL);
@@ -606,6 +660,10 @@ public class C_MainMenu {
             };
 
             String ownerVal = ownerCombo.getValue();
+            // Strip star from main users
+            if (ownerVal != null) {
+                ownerVal = ownerVal.replace(" *", "");
+            }
             ownerFilter = (ownerVal == null || ownerVal.isBlank()) ? "All" : ownerVal;
 
             String yearText = yearField.getText();

@@ -3,6 +3,7 @@ package dk.dtu.scenes;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import dk.dtu.SceneNavigator;
+import dk.dtu.SettingsDialog;
 import dk.dtu.collumns.*;
 import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Lists;
@@ -115,9 +116,6 @@ public class D_TodoListView {
         addTaskLink.getStyleClass().add("create-link");
         addTaskLink.setOnAction(e -> showCreateTaskDialog());
 
-        Label hint = new Label("Use the dropdown menus to edit status, due date, and owner for each task.");
-        hint.getStyleClass().add("todolist-hint");
-
         VBox titleSection = new VBox(5, title, info);
         titleSection.setAlignment(Pos.TOP_CENTER);
 
@@ -138,8 +136,7 @@ public class D_TodoListView {
                 titleSection,
                 new Label(""),
             horizontalScroll,
-                addTaskLink,
-                hint
+                addTaskLink
         );
         root.setSpacing(10);
         root.setPadding(new Insets(24));
@@ -336,6 +333,10 @@ public class D_TodoListView {
             };
 
             String ownerVal = ownerCombo.getValue();
+            // Strip star from main users
+            if (ownerVal != null) {
+                ownerVal = ownerVal.replace(" *", "");
+            }
             ownerFilter = (ownerVal == null || ownerVal.isBlank()) ? "All" : ownerVal;
 
             String yearText = yearField.getText();
@@ -517,7 +518,21 @@ public class D_TodoListView {
                 l.setUserData(col);
                 headerLabels.add(l);
             }
-            headerNodes.add(headerNode);
+            
+            // Wrap header in StackPane for vertical borders
+            StackPane headerWrapper = new StackPane(headerNode);
+            headerWrapper.setAlignment(Pos.CENTER);
+            headerWrapper.setMinWidth(col.prefWidth());
+            headerWrapper.setPrefWidth(col.prefWidth());
+            headerWrapper.setMaxWidth(col.prefWidth());
+            headerWrapper.getStyleClass().add("column-wrapper");
+            
+            if (PINNED_TITLE_ID.equals(col.id())) {
+                HBox.setHgrow(headerWrapper, javafx.scene.layout.Priority.ALWAYS);
+                headerWrapper.setMaxWidth(Double.MAX_VALUE);
+            }
+            
+            headerNodes.add(headerWrapper);
         }
         header.getChildren().setAll(headerNodes);
 
@@ -550,6 +565,7 @@ public class D_TodoListView {
                     wrapper.setMinWidth(col.prefWidth());
                     wrapper.setPrefWidth(col.prefWidth());
                     wrapper.setMaxWidth(col.prefWidth());
+                    wrapper.getStyleClass().add("column-wrapper");
 
                     if (PINNED_REORDER_ID.equals(col.id())) {
                         reorderHandle = n;
@@ -701,6 +717,7 @@ public class D_TodoListView {
                 if (empty || item == null) {
                     setGraphic(null);
                     setContextMenu(null);
+                    setStyle(""); // Clear any previous styling
                     return;
                 }
 
@@ -710,6 +727,14 @@ public class D_TodoListView {
 
                 setGraphic(row);
                 setContextMenu(contextMenu);
+                
+                // Apply tinted rows if enabled
+                if (SettingsDialog.isTintedRowsEnabled() && item.status != null) {
+                    String bgColor = getTintColorForStatus(item.status);
+                    setStyle(bgColor);
+                } else {
+                    setStyle(""); // Clear styling if tinting disabled
+                }
             }
         });
 
@@ -908,5 +933,27 @@ public class D_TodoListView {
 
     public void openColumnsDialog() {
         showTaskColumnDialog();
+    }
+    
+    /**
+     * Get the background tint color CSS for a given task status
+     */
+    private String getTintColorForStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return "";
+        }
+        
+        try {
+            TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
+            return switch (taskStatus) {
+                case NOT_STARTED -> "-fx-background-color: rgba(231, 76, 60, 0.20);"; // Light red
+                case IN_PROGRESS -> "-fx-background-color: rgba(52, 152, 219, 0.20);"; // Light blue
+                case DELAYED -> "-fx-background-color: rgba(243, 156, 18, 0.20);"; // Light orange
+                case NEED_HELP -> "-fx-background-color: rgba(155, 89, 182, 0.20);"; // Light purple
+                case DONE -> "-fx-background-color: rgba(39, 174, 96, 0.20);"; // Light green
+            };
+        } catch (IllegalArgumentException e) {
+            return "";
+        }
     }
 }

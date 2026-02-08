@@ -19,7 +19,7 @@ public class TaskDeleteColumn implements Column<Helpers.TaskEntry> {
 
     @Override
     public String title() {
-        return "";
+        return "Delete";
     }
 
     @Override
@@ -29,7 +29,9 @@ public class TaskDeleteColumn implements Column<Helpers.TaskEntry> {
 
     @Override
     public Node createHeader(ColumnHeaderContext<Helpers.TaskEntry> ctx) {
-        return ColumnUtils.createHeaderLabel("", prefWidth());
+        Label label = ColumnUtils.createHeaderLabel(title(), prefWidth());
+        label.setStyle("-fx-font-weight: bold; -fx-text-fill: transparent;");
+        return label;
     }
 
     @Override
