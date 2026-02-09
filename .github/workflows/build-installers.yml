@@ -24,6 +24,13 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
     
+    - name: Clone and build jSpace dependency
+      run: |
+        git clone https://github.com/pSpaces/jSpace-java.git
+        cd jSpace-java
+        mvn clean install -DskipTests
+        cd ..
+    
     - name: Build with Maven
       run: mvn clean package -DskipTests
     
@@ -78,6 +85,13 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: 'maven'
+    
+    - name: Clone and build jSpace dependency
+      run: |
+        git clone https://github.com/pSpaces/jSpace-java.git
+        cd jSpace-java
+        mvn clean install -DskipTests
+        cd ..
     
     - name: Build with Maven
       run: mvn clean package -DskipTests
