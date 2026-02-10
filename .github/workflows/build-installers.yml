@@ -74,10 +74,21 @@ jobs:
         }
         Write-Host "[OK] jmods directory found" -ForegroundColor Green
         
-        # Create runtime with essential Java modules (JavaFX stays on classpath)
+        # Find JavaFX JARs in client dependencies
+        $javafxJars = Get-ChildItem -Path "$PWD\dist\_jpackage\client" -Filter "javafx-*.jar"
+        Write-Host "Found $($javafxJars.Count) JavaFX dependency JARs" -ForegroundColor Cyan
+        $javafxJars | ForEach-Object { Write-Host "  - $($_.Name)" -ForegroundColor Gray }
+        
+        # Build combined module path (JDK modules + JavaFX JARs)
+        $javafxModulePath = "$PWD\dist\_jpackage\client"
+        $combinedModulePath = "$modulePath;$javafxModulePath"
+        
+        Write-Host "Module path: $combinedModulePath" -ForegroundColor Gray
+        
+        # Create runtime with Java and JavaFX modules
         jlink `
-          --module-path $modulePath `
-          --add-modules java.base,java.desktop,java.logging,java.naming,java.sql,java.xml,java.management,java.prefs,jdk.unsupported,jdk.crypto.ec `
+          --module-path $combinedModulePath `
+          --add-modules java.base,java.desktop,java.logging,java.naming,java.sql,java.xml,java.management,java.instrument,java.prefs,java.scripting,jdk.unsupported,jdk.crypto.ec,javafx.controls,javafx.fxml,javafx.graphics,javafx.base `
           --output $runtimeOutput `
           --strip-debug `
           --no-header-files `
@@ -232,19 +243,26 @@ jobs:
         echo "Staged client JARs:"
         ls -1 dist/_jpackage/client/*.jar | head -10
         
-        # Create custom runtime (WITHOUT JavaFX - keep it on classpath)
+        # Find JavaFX JARs in client dependencies
         echo ""
-        echo "Creating custom JRE runtime..."
+        echo "Found JavaFX dependency JARs:"
+        ls -1 dist/_jpackage/client/javafx-*.jar | xargs -n1 basename
+        
+        # Create custom runtime with JavaFX modules
+        echo ""
+        echo "Creating custom JRE runtime with JavaFX..."
         JAVA_HOME_PATH=$JAVA_HOME
         MODULE_PATH="$JAVA_HOME_PATH/jmods"
+        JAVAFX_MODULE_PATH="$(pwd)/dist/_jpackage/client"
+        COMBINED_MODULE_PATH="$MODULE_PATH:$JAVAFX_MODULE_PATH"
         
         echo "JAVA_HOME: $JAVA_HOME_PATH"
-        echo "Module path: $MODULE_PATH"
+        echo "Combined module path: $COMBINED_MODULE_PATH"
         
-        # Create runtime with essential Java modules (JavaFX stays on classpath)
+        # Create runtime with Java and JavaFX modules
         jlink \
-          --module-path "$MODULE_PATH" \
-          --add-modules java.base,java.desktop,java.logging,java.naming,java.sql,java.xml,java.management,java.prefs,jdk.unsupported,jdk.crypto.ec \
+          --module-path "$COMBINED_MODULE_PATH" \
+          --add-modules java.base,java.desktop,java.logging,java.naming,java.sql,java.xml,java.management,java.instrument,java.prefs,java.scripting,jdk.unsupported,jdk.crypto.ec,javafx.controls,javafx.fxml,javafx.graphics,javafx.base \
           --output dist/custom-runtime \
           --strip-debug \
           --no-header-files \
