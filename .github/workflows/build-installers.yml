@@ -34,10 +34,54 @@ jobs:
     - name: Build with Maven
       run: mvn clean package -DskipTests
     
+    - name: Stage dependencies and create custom runtime
+      run: |
+        # Create staging directories
+        New-Item -ItemType Directory -Force -Path dist\_jpackage\server | Out-Null
+        New-Item -ItemType Directory -Force -Path dist\_jpackage\client | Out-Null
+        
+        # Copy main JARs
+        Copy-Item server\target\todolist-server-1.0.0.jar dist\_jpackage\server\
+        Copy-Item client\target\todolist-client-1.0.0.jar dist\_jpackage\client\
+        
+        # Copy shared module to both
+        Copy-Item shared\target\todolist-shared-1.0.0.jar dist\_jpackage\server\
+        Copy-Item shared\target\todolist-shared-1.0.0.jar dist\_jpackage\client\
+        
+        # Copy all runtime dependencies
+        mvn -q -pl server -DskipTests dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory="dist\_jpackage\server"
+        mvn -q -pl client -DskipTests dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory="dist\_jpackage\client"
+        
+        # Create custom runtime with JavaFX modules
+        $javaHome = $env:JAVA_HOME
+        $modulePath = "$javaHome\jmods"
+        $javafxPath = "dist\_jpackage\client"
+        
+        jlink `
+          --module-path "$modulePath;$javafxPath" `
+          --add-modules java.base,java.desktop,java.logging,java.naming,java.sql,java.xml,java.management,java.prefs,jdk.unsupported,jdk.crypto.ec,javafx.controls,javafx.fxml,javafx.graphics,javafx.base `
+          --output dist\custom-runtime `
+          --strip-debug `
+          --no-header-files `
+          --no-man-pages `
+          --compress=zip-6
+        
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "jlink with JavaFX failed, creating runtime without JavaFX modules..."
+          jlink `
+            --module-path $modulePath `
+            --add-modules java.base,java.desktop,java.logging,java.naming,java.sql,java.xml,java.management,java.prefs,jdk.unsupported,jdk.crypto.ec `
+            --output dist\custom-runtime `
+            --strip-debug `
+            --no-header-files `
+            --no-man-pages `
+            --compress=zip-6
+        }
+    
     - name: Build Server MSI
       run: |
         jpackage `
-          --input server/target `
+          --input dist\_jpackage\server `
           --name "TodoList Server" `
           --main-jar todolist-server-1.0.0.jar `
           --main-class dk.dtu.ServerApp `
@@ -45,14 +89,16 @@ jobs:
           --app-version 1.0.0 `
           --vendor "TodoList Team" `
           --description "TodoList Management System Server" `
+          --runtime-image dist\custom-runtime `
           --win-dir-chooser `
           --win-menu `
-          --win-shortcut
+          --win-shortcut `
+          --java-options "-Dtodolist.port=9001"
     
     - name: Build Client MSI
       run: |
         jpackage `
-          --input client/target `
+          --input dist\_jpackage\client `
           --name "TodoList Client" `
           --main-jar todolist-client-1.0.0.jar `
           --main-class dk.dtu.ClientApp `
@@ -60,9 +106,12 @@ jobs:
           --app-version 1.0.0 `
           --vendor "TodoList Team" `
           --description "TodoList Management System Client" `
+          --runtime-image dist\custom-runtime `
           --win-dir-chooser `
           --win-menu `
-          --win-shortcut
+          --win-shortcut `
+          --java-options "-Dtodolist.server.ip=127.0.0.1" `
+          --java-options "-Dtodolist.port=9001"
     
     - name: Upload Windows Installers
       uses: actions/upload-artifact@v4
@@ -96,29 +145,77 @@ jobs:
     - name: Build with Maven
       run: mvn clean package -DskipTests
     
+    - name: Stage dependencies and create custom runtime
+      run: |
+        # Create staging directories
+        mkdir -p dist/_jpackage/server
+        mkdir -p dist/_jpackage/client
+        
+        # Copy main JARs
+        cp server/target/todolist-server-1.0.0.jar dist/_jpackage/server/
+        cp client/target/todolist-client-1.0.0.jar dist/_jpackage/client/
+        
+        # Copy shared module to both
+        cp shared/target/todolist-shared-1.0.0.jar dist/_jpackage/server/
+        cp shared/target/todolist-shared-1.0.0.jar dist/_jpackage/client/
+        
+        # Copy all runtime dependencies
+        mvn -q -pl server -DskipTests dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory="dist/_jpackage/server"
+        mvn -q -pl client -DskipTests dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory="dist/_jpackage/client"
+        
+        # Create custom runtime with JavaFX modules
+        JAVA_HOME_PATH=$JAVA_HOME
+        MODULE_PATH="$JAVA_HOME_PATH/jmods"
+        JAVAFX_PATH="dist/_jpackage/client"
+        
+        jlink \
+          --module-path "$MODULE_PATH:$JAVAFX_PATH" \
+          --add-modules java.base,java.desktop,java.logging,java.naming,java.sql,java.xml,java.management,java.prefs,jdk.unsupported,jdk.crypto.ec,javafx.controls,javafx.fxml,javafx.graphics,javafx.base \
+          --output dist/custom-runtime \
+          --strip-debug \
+          --no-header-files \
+          --no-man-pages \
+          --compress=zip-6 || \
+        {
+          echo "jlink with JavaFX failed, creating runtime without JavaFX modules..."
+          jlink \
+            --module-path "$MODULE_PATH" \
+            --add-modules java.base,java.desktop,java.logging,java.naming,java.sql,java.xml,java.management,java.prefs,jdk.unsupported,jdk.crypto.ec \
+            --output dist/custom-runtime \
+            --strip-debug \
+            --no-header-files \
+            --no-man-pages \
+            --compress=zip-6
+        }
+    
     - name: Build Server DMG
       run: |
         jpackage \
-          --input server/target \
+          --input dist/_jpackage/server \
           --name "TodoList Server" \
           --main-jar todolist-server-1.0.0.jar \
           --main-class dk.dtu.ServerApp \
           --type dmg \
           --app-version 1.0.0 \
           --vendor "TodoList Team" \
-          --description "TodoList Management System Server"
+          --description "TodoList Management System Server" \
+          --runtime-image dist/custom-runtime \
+          --java-options "-Dtodolist.port=9001"
     
     - name: Build Client DMG
       run: |
         jpackage \
-          --input client/target \
+          --input dist/_jpackage/client \
           --name "TodoList Client" \
           --main-jar todolist-client-1.0.0.jar \
           --main-class dk.dtu.ClientApp \
           --type dmg \
           --app-version 1.0.0 \
           --vendor "TodoList Team" \
-          --description "TodoList Management System Client"
+          --description "TodoList Management System Client" \
+          --runtime-image dist/custom-runtime \
+          --java-options "-Dtodolist.server.ip=127.0.0.1" \
+          --java-options "-Dtodolist.port=9001"
     
     - name: Upload macOS Installers
       uses: actions/upload-artifact@v4
