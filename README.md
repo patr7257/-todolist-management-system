@@ -124,7 +124,7 @@ This enables console windows and detailed logging to `%LOCALAPPDATA%\TodoList\lo
 
 **Build DMG installers:**
 ```bash
-mvn clean package -DskipTests
+mvn clean install -DskipTests
 
 jpackage \
   --input server/target \
