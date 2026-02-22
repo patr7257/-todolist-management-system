@@ -42,6 +42,7 @@ jobs:
           Copy-Item server/target/libs/*.jar server-jpackage-input/
 
       - name: Create Windows Client Installer
+        shell: cmd
         run: |
           jpackage ^
             --type msi ^
@@ -52,6 +53,7 @@ jobs:
             --dest installers
 
       - name: Create Windows Server Installer
+        shell: cmd
         run: |
           jpackage ^
             --type msi ^
