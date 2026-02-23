@@ -50,6 +50,11 @@ jobs:
             --input client-jpackage-input ^
             --main-jar todolist-client-1.0.0.jar ^
             --main-class dk.dtu.ClientApp ^
+            --win-console ^
+            --java-options "-Djava.class.path=app/*" ^
+            --java-options "-Dtodolist.server.ip=127.0.0.1" ^
+            --java-options "-Dtodolist.port=9001" ^
+            --add-modules javafx.controls,javafx.fxml ^
             --dest installers
 
       - name: Create Windows Server Installer
@@ -61,6 +66,10 @@ jobs:
             --input server-jpackage-input ^
             --main-jar todolist-server-1.0.0.jar ^
             --main-class dk.dtu.ServerApp ^
+            --win-console ^
+            --java-options "-Djava.class.path=app/*" ^
+            --java-options "-Dtodolist.port=9001" ^
+            --add-modules javafx.controls,javafx.fxml ^
             --dest installers
 
       - name: Upload Windows Installers to Release
@@ -111,6 +120,10 @@ jobs:
             --input client-jpackage-input \
             --main-jar todolist-client-1.0.0.jar \
             --main-class dk.dtu.ClientApp \
+            --java-options "-Djava.class.path=app/*" \
+            --java-options "-Dtodolist.server.ip=127.0.0.1" \
+            --java-options "-Dtodolist.port=9001" \
+            --add-modules javafx.controls,javafx.fxml \
             --dest installers
 
       - name: Create macOS Server DMG
@@ -121,6 +134,9 @@ jobs:
             --input server-jpackage-input \
             --main-jar todolist-server-1.0.0.jar \
             --main-class dk.dtu.ServerApp \
+            --java-options "-Djava.class.path=app/*" \
+            --java-options "-Dtodolist.port=9001" \
+            --add-modules javafx.controls,javafx.fxml \
             --dest installers
 
       - name: Upload macOS Installers to Release
