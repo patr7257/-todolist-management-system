@@ -457,6 +457,26 @@
     -fx-max-height: 35px;
 }
 
+/* Table ComboBoxes: the global `.combo-box` padding can cause inner content clipping */
+.task-col-status,
+.task-col-owner {
+    -fx-padding: 0;
+}
+
+/* Owner ComboBox: center displayed text and menu items */
+.task-col-owner > .list-cell,
+.task-col-owner .list-cell {
+    -fx-alignment: center;
+    -fx-padding: 0 8 0 8;
+}
+
+/* Status ComboBox: center displayed text and menu items */
+.task-col-status > .list-cell,
+.task-col-status .list-cell {
+    -fx-alignment: center;
+    -fx-padding: 0 8 0 8;
+}
+
 /* Sidebar styling */
 .sidebar {
     -fx-background-color: #f5f5f5;

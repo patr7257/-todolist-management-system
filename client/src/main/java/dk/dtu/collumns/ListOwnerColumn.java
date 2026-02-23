@@ -15,6 +15,7 @@ import java.util.Comparator;
 public class ListOwnerColumn implements Column<Helpers.ListEntry> {
 
     private static final String ALL = "All";
+    private static final double CELL_HEIGHT = 35;
 
     @Override
     public String id() {
@@ -49,6 +50,7 @@ public class ListOwnerColumn implements Column<Helpers.ListEntry> {
         ownerCombo.setMinWidth(prefWidth() - 10);
         ownerCombo.setMaxWidth(prefWidth() - 10);
         ownerCombo.setPromptText("Owner");
+        ownerCombo.getStyleClass().add("task-col-owner");
 
         ownerCombo.setButtonCell(new ListCell<>() {
             @Override
@@ -66,6 +68,12 @@ public class ListOwnerColumn implements Column<Helpers.ListEntry> {
                 setAlignment(Pos.CENTER);
             }
         });
+
+        // Ensure the ComboBox's internal cells match the control height (prevents vertical text clipping)
+        ownerCombo.getButtonCell().setMinHeight(CELL_HEIGHT);
+        ownerCombo.getButtonCell().setPrefHeight(CELL_HEIGHT);
+        ownerCombo.getButtonCell().setMaxHeight(CELL_HEIGHT);
+        ownerCombo.getButtonCell().setStyle("-fx-padding: 0 8 0 8;");
 
         Users.loadUsersIntoComboBox(ownerCombo, Config.getUsersUri(), true);
 

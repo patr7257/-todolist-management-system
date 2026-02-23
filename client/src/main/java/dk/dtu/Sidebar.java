@@ -269,6 +269,7 @@ public class Sidebar extends VBox {
         dialog.setOnSettingsChanged(() -> {
             // Refresh current scene if needed - settings were changed
             System.out.println("Settings changed - restart scenes to see changes");
+            navigator.refreshWindowTitle();
         });
         dialog.showAndWait();
     }

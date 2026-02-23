@@ -84,6 +84,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: installers/*.msi
+          replace_existing_artifacts: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -157,5 +158,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: installers/*.dmg
+          replace_existing_artifacts: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

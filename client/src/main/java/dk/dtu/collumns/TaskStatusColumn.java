@@ -14,6 +14,8 @@ import java.util.Comparator;
 
 public class TaskStatusColumn implements Column<Helpers.TaskEntry> {
 
+    private static final double CELL_HEIGHT = 35;
+
     @Override
     public String id() {
         return "status";
@@ -116,6 +118,10 @@ public class TaskStatusColumn implements Column<Helpers.TaskEntry> {
                 super.updateItem(status, empty);
                 getStyleClass().removeAll("status-NOT_STARTED", "status-IN_PROGRESS", "status-DELAYED", "status-NEED_HELP", "status-DONE");
                 setAlignment(Pos.CENTER);
+                setMinHeight(CELL_HEIGHT);
+                setPrefHeight(CELL_HEIGHT);
+                setMaxHeight(CELL_HEIGHT);
+                setStyle("-fx-padding: 0 8 0 8;");
                 if (empty || status == null) {
                     setText(null);
                 } else {

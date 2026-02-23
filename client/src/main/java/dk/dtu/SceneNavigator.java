@@ -17,6 +17,8 @@ import java.util.Deque;
 // JavaFX navigation between scenes (Add more methods for new scenes)
 public class SceneNavigator {
 
+    private static final String APP_TITLE = "TodoList Management System";
+
     private final Stage stage;
     private String currentUser;
     private Thread notificationThread;
@@ -256,6 +258,37 @@ public class SceneNavigator {
         stage.setScene(sceneWithSidebar);
     }
 
+    private String buildWindowTitle(String viewTitle) {
+        String mainUsers = MainUserConfig.formatMainUsersForTitle();
+
+        if (viewTitle == null || viewTitle.isBlank()) {
+            return mainUsers.isBlank() ? APP_TITLE : (APP_TITLE + " - " + mainUsers);
+        }
+        if (mainUsers.isBlank()) {
+            return viewTitle + " - " + APP_TITLE;
+        }
+        return viewTitle + " - " + APP_TITLE + " - " + mainUsers;
+    }
+
+    public void refreshWindowTitle() {
+        if (currentState == null) {
+            stage.setTitle(buildWindowTitle(null));
+            return;
+        }
+
+        String viewTitle = switch (currentState.type) {
+            case WELCOME -> null;
+            case LOGIN -> "Login";
+            case MAIN_MENU -> "Main Menu";
+            case TODO_LIST -> {
+                String listName = currentState.listName;
+                yield (listName == null || listName.isBlank()) ? "Todo List" : ("Todo List - " + listName);
+            }
+        };
+
+        stage.setTitle(buildWindowTitle(viewTitle));
+    }
+
     // A: Show welcome scene (first thing when ClientApp starts)
     public void showWelcome() {
         navigateTo(NavState.welcome(), true);
@@ -267,7 +300,7 @@ public class SceneNavigator {
         sidebar.setColumnFilterButtonAction(null);
         sidebar.setListFilterButtonAction(null);
         Scene scene = new A_WelcomeScreen(this).createScene();
-        setScene(scene, "TodoList Management System");
+        setScene(scene, buildWindowTitle(null));
     }
 
     // B: Show login screen
@@ -285,7 +318,7 @@ public class SceneNavigator {
         sidebar.setColumnFilterButtonAction(null);
         sidebar.setListFilterButtonAction(null);
         Scene scene = new B_LoginScreen(this).createScene();
-        setScene(scene, "Login - TodoList Management System");
+        setScene(scene, buildWindowTitle("Login"));
     }
 
     // C: Show main menu
@@ -307,7 +340,7 @@ public class SceneNavigator {
             }
         });
         Scene scene = currentMainMenu.createScene();
-        setScene(scene, "Main Menu - TodoList Management System");
+        setScene(scene, buildWindowTitle("Main Menu"));
     }
 
     public void showMainMenuWithMessage(String loginMessage) {
@@ -334,7 +367,7 @@ public class SceneNavigator {
             }
         });
         Scene scene = currentTodoListView.createScene();
-        setScene(scene, "Todo List - " + listName);
+        setScene(scene, buildWindowTitle(listName == null ? "Todo List" : ("Todo List - " + listName)));
     }
 
     public void setCurrentUser(String username) {

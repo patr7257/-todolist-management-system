@@ -11,8 +11,8 @@ public final class ColumnUtils {
     public static Label createSortableHeaderLabel(String title, double prefWidth, Runnable onClick) {
         Label label = new Label(title + " ▲▼");
         label.setPrefWidth(prefWidth);
-        label.setMinWidth(prefWidth);
-        label.setMaxWidth(prefWidth);
+        label.setMinWidth(0);
+        label.setMaxWidth(Double.MAX_VALUE);
         label.setAlignment(Pos.CENTER);
         label.setStyle("-fx-font-weight: bold; -fx-cursor: hand;");
         if (onClick != null) {
@@ -24,8 +24,8 @@ public final class ColumnUtils {
     public static Label createHeaderLabel(String title, double prefWidth) {
         Label label = new Label(title);
         label.setPrefWidth(prefWidth);
-        label.setMinWidth(prefWidth);
-        label.setMaxWidth(prefWidth);
+        label.setMinWidth(0);
+        label.setMaxWidth(Double.MAX_VALUE);
         label.setAlignment(Pos.CENTER);
         label.setStyle("-fx-font-weight: bold;");
         return label;

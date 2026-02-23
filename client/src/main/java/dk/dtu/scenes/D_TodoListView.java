@@ -215,8 +215,12 @@ public class D_TodoListView {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Filter tasks");
 
+        final double FILTER_CONTROL_WIDTH = 240;
+
         ComboBox<String> titleCombo = new ComboBox<>();
         titleCombo.getItems().addAll("All", "Empty", "Not empty");
+        titleCombo.setPrefWidth(FILTER_CONTROL_WIDTH);
+        titleCombo.setMinWidth(FILTER_CONTROL_WIDTH);
         titleCombo.setValue(switch (titleFilter) {
             case EMPTY -> "Empty";
             case NOT_EMPTY -> "Not empty";
@@ -224,25 +228,34 @@ public class D_TodoListView {
         });
 
         ComboBox<String> ownerCombo = new ComboBox<>();
-        ownerCombo.setPrefWidth(240);
+        ownerCombo.setPrefWidth(FILTER_CONTROL_WIDTH);
+        ownerCombo.setMinWidth(FILTER_CONTROL_WIDTH);
         Users.loadUsersIntoComboBox(ownerCombo, Config.getUsersUri(), true);
         ownerCombo.setValue(ownerFilter != null ? ownerFilter : "All");
 
         TextField yearField = new TextField(yearFilter != null ? Integer.toString(yearFilter) : "");
+        yearField.setPrefWidth(FILTER_CONTROL_WIDTH);
+        yearField.setMinWidth(FILTER_CONTROL_WIDTH);
         yearField.setPromptText("Year (blank = All)");
 
         ComboBox<String> priorityCombo = new ComboBox<>();
         priorityCombo.getItems().add("All");
         for (int p = 1; p <= 10; p++) priorityCombo.getItems().add(Integer.toString(p));
+        priorityCombo.setPrefWidth(FILTER_CONTROL_WIDTH);
+        priorityCombo.setMinWidth(FILTER_CONTROL_WIDTH);
         priorityCombo.setValue(priorityFilter != null ? Integer.toString(priorityFilter) : "All");
 
         ComboBox<String> statusCombo = new ComboBox<>();
         statusCombo.getItems().add("All");
         for (TaskStatus s : TaskStatus.values()) statusCombo.getItems().add(s.name());
+        statusCombo.setPrefWidth(FILTER_CONTROL_WIDTH);
+        statusCombo.setMinWidth(FILTER_CONTROL_WIDTH);
         statusCombo.setValue(statusFilter != null ? statusFilter.name() : "All");
 
         ComboBox<String> dueDateCombo = new ComboBox<>();
         dueDateCombo.getItems().addAll("All", "Empty", "Not empty");
+        dueDateCombo.setPrefWidth(FILTER_CONTROL_WIDTH);
+        dueDateCombo.setMinWidth(FILTER_CONTROL_WIDTH);
         dueDateCombo.setValue(switch (dueDateFilter) {
             case EMPTY -> "Empty";
             case NOT_EMPTY -> "Not empty";
@@ -251,6 +264,8 @@ public class D_TodoListView {
 
         ComboBox<String> locationCombo = new ComboBox<>();
         locationCombo.getItems().addAll("All", "Empty", "Not empty");
+        locationCombo.setPrefWidth(FILTER_CONTROL_WIDTH);
+        locationCombo.setMinWidth(FILTER_CONTROL_WIDTH);
         locationCombo.setValue(switch (locationFilter) {
             case EMPTY -> "Empty";
             case NOT_EMPTY -> "Not empty";
@@ -259,6 +274,8 @@ public class D_TodoListView {
 
         ComboBox<String> descriptionCombo = new ComboBox<>();
         descriptionCombo.getItems().addAll("All", "Empty", "Not empty");
+        descriptionCombo.setPrefWidth(FILTER_CONTROL_WIDTH);
+        descriptionCombo.setMinWidth(FILTER_CONTROL_WIDTH);
         descriptionCombo.setValue(switch (descriptionFilter) {
             case EMPTY -> "Empty";
             case NOT_EMPTY -> "Not empty";

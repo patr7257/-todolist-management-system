@@ -84,6 +84,31 @@ public class MainUserConfig {
         }
         return users;
     }
+
+    /**
+     * Format main users for display in the window title.
+     *
+     * Examples:
+     * - "Alice" (1 main user)
+     * - "Alice & Bob" (2 main users)
+     * - "" if users are not configured/blank
+     */
+    public static String formatMainUsersForTitle() {
+        List<String> raw = getMainUsers();
+        List<String> cleaned = new ArrayList<>();
+
+        for (String u : raw) {
+            if (u == null) continue;
+            String t = u.trim();
+            if (t.isEmpty()) continue;
+            if (cleaned.contains(t)) continue;
+            cleaned.add(t);
+        }
+
+        if (cleaned.isEmpty()) return "";
+        if (cleaned.size() == 1) return cleaned.get(0);
+        return cleaned.get(0) + " & " + cleaned.get(1);
+    }
     
     /**
      * Check if a username is a main user

@@ -39,6 +39,18 @@ These can be set as JVM system properties (or environment variables):
 - `todolist.bind.host` (env: `TODOLIST_BIND_HOST`) – server bind host (default: `0.0.0.0`)
 - `todolist.data.dir` – where the server stores `session.json` (default: `%USERPROFILE%\.todolist-data`)
 
+### Seed data vs. saved session
+
+On first run (no existing `session.json`), the server initializes a small demo dataset.
+
+If you previously ran the app, you may already have a saved session in `%USERPROFILE%\.todolist-data`. In that case, the server will load that session instead of the demo seed data.
+
+**Reset to demo data (Windows):**
+
+1. Stop the server
+2. Delete `%USERPROFILE%\.todolist-data` (or just `session.json` inside it)
+3. Start the server again
+
 Example (client connects to a server on another PC):
 
 ```powershell

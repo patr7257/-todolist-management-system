@@ -15,6 +15,7 @@ import java.util.Comparator;
 public class TaskOwnerColumn implements Column<Helpers.TaskEntry> {
 
     private static final String ALL = "All";
+    private static final double CELL_HEIGHT = 35;
 
     @Override
     public String id() {
@@ -68,6 +69,12 @@ public class TaskOwnerColumn implements Column<Helpers.TaskEntry> {
                 setAlignment(Pos.CENTER);
             }
         });
+
+        // Ensure the ComboBox's internal cells match the control height (prevents vertical text clipping)
+        ownerCombo.getButtonCell().setMinHeight(CELL_HEIGHT);
+        ownerCombo.getButtonCell().setPrefHeight(CELL_HEIGHT);
+        ownerCombo.getButtonCell().setMaxHeight(CELL_HEIGHT);
+        ownerCombo.getButtonCell().setStyle("-fx-padding: 0 8 0 8;");
 
         Users.loadUsersIntoComboBox(ownerCombo, Config.getUsersUri(), true);
 

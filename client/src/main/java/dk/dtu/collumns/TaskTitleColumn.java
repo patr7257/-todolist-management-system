@@ -39,7 +39,7 @@ public class TaskTitleColumn implements Column<Helpers.TaskEntry> {
     @Override
     public ColumnCell<Helpers.TaskEntry> createCell(ColumnCellContext<Helpers.TaskEntry> ctx) {
         Label label = new Label();
-        label.setMinWidth(prefWidth());
+        label.setMinWidth(120);
         label.setPrefWidth(prefWidth());
         label.setMaxWidth(Double.MAX_VALUE);
         label.setAlignment(Pos.CENTER);
