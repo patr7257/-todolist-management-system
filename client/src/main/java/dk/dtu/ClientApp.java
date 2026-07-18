@@ -37,5 +37,8 @@ public class ClientApp extends Application {
         });
 
         primaryStage.show();
+
+        // First scene is up: quietly check for a newer release in the background.
+        navigator.checkForUpdatesOnLaunch();
     }
 }

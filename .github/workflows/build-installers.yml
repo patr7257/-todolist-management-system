@@ -29,6 +29,14 @@ jobs:
       - name: Build all modules
         run: mvn -B clean package
 
+      - name: Compute version
+        id: ver
+        shell: bash
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          case "$V" in [0-9]*.[0-9]*.[0-9]*) ;; *) V=0.0.1 ;; esac
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+
       - name: Prepare Client jpackage input
         run: |
           New-Item -ItemType Directory -Force -Path client-jpackage-input
@@ -54,7 +62,7 @@ jobs:
             --input client-jpackage-input ^
             --main-jar todolist-client-1.0.0.jar ^
             --main-class dk.dtu.ClientApp ^
-            --app-version 1.0.0 ^
+            --app-version ${{ steps.ver.outputs.version }} ^
             --vendor "TodoList" ^
             --description "TodoList Management Client" ^
             --module-path client-jpackage-input ^
@@ -65,6 +73,7 @@ jobs:
             --win-upgrade-uuid c70294f3-9868-42a9-9ffc-7c3d80b71a4e ^
             --java-options "-Dtodolist.server.ip=${{ vars.TODOLIST_SERVER_HOST || '127.0.0.1' }}" ^
             --java-options "-Dtodolist.port=9001" ^
+            --java-options "-Dtodolist.version=${{ steps.ver.outputs.version }}" ^
             --dest installers
 
       - name: Create Windows Server Installer
@@ -76,7 +85,7 @@ jobs:
             --input server-jpackage-input ^
             --main-jar todolist-server-1.0.0.jar ^
             --main-class dk.dtu.ServerApp ^
-            --app-version 1.0.0 ^
+            --app-version ${{ steps.ver.outputs.version }} ^
             --vendor "TodoList" ^
             --description "TodoList Management Server" ^
             --module-path server-jpackage-input ^
@@ -91,8 +100,8 @@ jobs:
       # Stable, versionless copies so releases/latest/download/<name> never breaks.
       - name: Create stable-named copies
         run: |
-          Copy-Item "installers/TodoList Client-1.0.0.msi" "installers/TodoList-Client-Windows.msi"
-          Copy-Item "installers/TodoList Server-1.0.0.msi" "installers/TodoList-Server-Windows.msi"
+          Copy-Item "installers/TodoList Client-${{ steps.ver.outputs.version }}.msi" "installers/TodoList-Client-Windows.msi"
+          Copy-Item "installers/TodoList Server-${{ steps.ver.outputs.version }}.msi" "installers/TodoList-Server-Windows.msi"
 
       - name: Upload Windows Installers to Release
         uses: softprops/action-gh-release@v2
@@ -125,6 +134,14 @@ jobs:
 
       - name: Build all modules
         run: mvn -B clean package
+
+      - name: Compute version
+        id: ver
+        shell: bash
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          case "$V" in [0-9]*.[0-9]*.[0-9]*) ;; *) V=0.0.1 ;; esac
+          echo "version=$V" >> "$GITHUB_OUTPUT"
 
       - name: Prepare Client jpackage input
         run: |
@@ -162,7 +179,7 @@ jobs:
             --input client-jpackage-input \
             --main-jar todolist-client-1.0.0.jar \
             --main-class dk.dtu.ClientApp \
-            --app-version 1.0.0 \
+            --app-version ${{ steps.ver.outputs.version }} \
             --vendor "TodoList" \
             --description "TodoList Management Client" \
             --module-path client-jpackage-input \
@@ -171,6 +188,7 @@ jobs:
             --mac-package-identifier com.patr7257.todolist.client \
             --java-options "-Dtodolist.server.ip=${{ vars.TODOLIST_SERVER_HOST || '127.0.0.1' }}" \
             --java-options "-Dtodolist.port=9001" \
+            --java-options "-Dtodolist.version=${{ steps.ver.outputs.version }}" \
             --dest installers
 
       - name: Create macOS Server DMG
@@ -181,7 +199,7 @@ jobs:
             --input server-jpackage-input \
             --main-jar todolist-server-1.0.0.jar \
             --main-class dk.dtu.ServerApp \
-            --app-version 1.0.0 \
+            --app-version ${{ steps.ver.outputs.version }} \
             --vendor "TodoList" \
             --description "TodoList Management Server" \
             --module-path server-jpackage-input \
@@ -194,8 +212,8 @@ jobs:
       # Stable, versionless copies so releases/latest/download/<name> never breaks.
       - name: Create stable-named copies
         run: |
-          cp "installers/TodoList Client-1.0.0.dmg" "installers/TodoList-Client-macOS.dmg"
-          cp "installers/TodoList Server-1.0.0.dmg" "installers/TodoList-Server-macOS.dmg"
+          cp "installers/TodoList Client-${{ steps.ver.outputs.version }}.dmg" "installers/TodoList-Client-macOS.dmg"
+          cp "installers/TodoList Server-${{ steps.ver.outputs.version }}.dmg" "installers/TodoList-Server-macOS.dmg"
 
       - name: Upload macOS Installers to Release
         uses: softprops/action-gh-release@v2

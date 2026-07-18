@@ -3,6 +3,10 @@ package dk.dtu;
 import atlantafx.base.theme.Styles;
 import dk.dtu.methods.Users;
 import dk.dtu.shared.Config;
+import dk.dtu.update.AppVersion;
+import dk.dtu.update.ReleaseInfo;
+import dk.dtu.update.UpdateChecker;
+import dk.dtu.update.UpdateFlow;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -56,8 +60,9 @@ public class SettingsDialog extends Dialog<ButtonType> {
         // Create tabs
         Tab userTab = new Tab("User Management", createUserManagementPane());
         Tab displayTab = new Tab("Display Options", createDisplayOptionsPane());
-        
-        tabPane.getTabs().addAll(userTab, displayTab);
+        Tab updatesTab = new Tab("Updates", createUpdatesPane());
+
+        tabPane.getTabs().addAll(userTab, displayTab, updatesTab);
         
         getDialogPane().setContent(tabPane);
         getDialogPane().getButtonTypes().addAll(APPLY, ButtonType.CLOSE);
@@ -283,6 +288,76 @@ public class SettingsDialog extends Dialog<ButtonType> {
         return container;
     }
     
+    private VBox createUpdatesPane() {
+        VBox container = new VBox(16);
+        container.setPadding(new Insets(20));
+
+        Label title = new Label("Software Updates");
+        title.getStyleClass().add("settings-section-title");
+
+        Label versionLabel = new Label("Current version: " + AppVersion.current());
+
+        Button checkButton = new Button("Check for updates");
+        checkButton.getStyleClass().add(Styles.ACCENT);
+
+        // Inline status area (message plus an optional action button).
+        Label statusLabel = new Label();
+        statusLabel.setWrapText(true);
+        Button actionButton = new Button();
+        actionButton.setVisible(false);
+        actionButton.setManaged(false);
+
+        VBox statusBox = new VBox(8, statusLabel, actionButton);
+
+        checkButton.setOnAction(e -> {
+            checkButton.setDisable(true);
+            statusLabel.setText("Checking...");
+            actionButton.setVisible(false);
+            actionButton.setManaged(false);
+
+            new Thread(() -> {
+                ReleaseInfo release = new UpdateChecker().findNewerRelease().orElse(null);
+                Platform.runLater(() -> {
+                    checkButton.setDisable(false);
+                    if (release == null) {
+                        statusLabel.setText("You are on the latest version (" + AppVersion.current() + ").");
+                        actionButton.setVisible(false);
+                        actionButton.setManaged(false);
+                        return;
+                    }
+
+                    statusLabel.setText("Update available: v" + release.version());
+                    actionButton.setVisible(true);
+                    actionButton.setManaged(true);
+
+                    if (release.hasInstallableAsset()) {
+                        actionButton.setText("Update now");
+                        actionButton.getStyleClass().setAll("button", Styles.ACCENT);
+                        actionButton.setOnAction(ev -> {
+                            actionButton.setDisable(true);
+                            actionButton.setText("Downloading...");
+                            UpdateFlow.downloadAndInstall(release, () -> {
+                                actionButton.setDisable(false);
+                                actionButton.setText("Update now");
+                                statusLabel.setText("Update failed. Opened the releases page instead.");
+                            });
+                        });
+                    } else {
+                        actionButton.setText("Open releases page");
+                        actionButton.getStyleClass().setAll("button");
+                        actionButton.setOnAction(ev -> UpdateFlow.openReleasesPage(release.releasePageUrl()));
+                    }
+                });
+            }, "settings-update-check").start();
+        });
+
+        VBox panel = new VBox(12, versionLabel, checkButton, statusBox);
+        panel.getStyleClass().add("settings-panel");
+
+        container.getChildren().addAll(title, panel);
+        return container;
+    }
+
     private void loadUsersIntoListView(ListView<String> listView) {
         new Thread(() -> {
             try {
