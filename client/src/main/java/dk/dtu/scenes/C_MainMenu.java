@@ -104,11 +104,20 @@ public class C_MainMenu {
         createLink.getStyleClass().add("create-link");
         createLink.setOnAction(e -> showCreateListDialog());
 
+        // Auto-fit columns to their content's optimal width.
+        javafx.scene.control.Button autoFitButton = new javafx.scene.control.Button("Auto-fit columns");
+        autoFitButton.setGraphic(dk.dtu.ui.Icons.of("fth-maximize-2", 14));
+        autoFitButton.getStyleClass().addAll(atlantafx.base.theme.Styles.FLAT, "autofit-button");
+        autoFitButton.setOnAction(e -> dk.dtu.ui.Tables.autoFitColumns(table));
+
+        javafx.scene.layout.HBox footer = new javafx.scene.layout.HBox(24, createLink, autoFitButton);
+        footer.setAlignment(Pos.CENTER);
+
         // Spacer between title and table (instead of dummy Label(""))
         Region spacer = new Region();
         spacer.setMinHeight(8);
 
-        VBox root = new VBox(titleSection, spacer, table, createLink);
+        VBox root = new VBox(titleSection, spacer, table, footer);
         root.setSpacing(10);
         root.setPadding(new Insets(24));
         root.setAlignment(Pos.TOP_CENTER);

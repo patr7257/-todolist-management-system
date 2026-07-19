@@ -70,8 +70,10 @@ public final class Tables {
     public static <T> TableView<T> build(List<Column<T>> columns, ObservableList<T> items, Config<T> cfg) {
         TableView<T> table = new TableView<>(items);
         table.getStyleClass().add("app-table");
-        // Auto-fit: columns share the table width (no dead horizontal scrollbar) and stay drag-resizable.
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        // Columns keep their own width and stay drag-resizable; a horizontal
+        // scrollbar appears when the columns need more room than the viewport.
+        // (The bottom "Auto-fit columns" button sizes each column to its content.)
+        table.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         table.getSelectionModel().setCellSelectionEnabled(false);
 
         for (Column<T> column : columns) {
@@ -232,6 +234,65 @@ public final class Tables {
             cfg.persistOrder.accept(List.copyOf(items));
             e.consume();
         });
+    }
+
+    /**
+     * Resize every resizable column to fit its content's optimal width (the same
+     * behavior as double-clicking a column divider). Measures the real rendered
+     * cells across all rows, so e.g. a year of "123456789" gets more room than
+     * "2026". Uses the skin's own measurement via reflection; if that is
+     * unavailable it is a silent no-op (columns just keep their current width).
+     */
+    public static void autoFitColumns(TableView<?> table) {
+        if (table == null || table.getSkin() == null) return;
+        try {
+            // JavaFX 21 moved the content-measuring resize to the per-column header
+            // (TableColumnHeader.resizeColumnToFitContent(int)). Navigate:
+            // skin -> TableHeaderRow -> root NestedTableColumnHeader -> column headers.
+            Object skin = table.getSkin();
+            Object headerRow = invokeNoArg(skin, "getTableHeaderRow");
+            if (headerRow == null) return;
+            Object rootHeader = invokeNoArg(headerRow, "getRootHeader");
+            if (rootHeader == null) return;
+            resizeHeaders(rootHeader);
+        } catch (Throwable t) {
+            // Reflective access blocked or API changed: silent no-op.
+        }
+    }
+
+    private static void resizeHeaders(Object header) throws Exception {
+        Object childrenObj = invokeNoArg(header, "getColumnHeaders");
+        if (childrenObj instanceof List<?> children && !children.isEmpty()) {
+            for (Object child : children) {
+                resizeHeaders(child); // nested header -> recurse
+            }
+            return;
+        }
+        // Leaf column header: measure all rows (-1) and set the width to fit.
+        java.lang.reflect.Method m = findMethod(header.getClass(), "resizeColumnToFitContent", 1);
+        if (m != null) {
+            m.setAccessible(true);
+            m.invoke(header, -1);
+        }
+    }
+
+    private static Object invokeNoArg(Object target, String name) throws Exception {
+        java.lang.reflect.Method m = findMethod(target.getClass(), name, 0);
+        if (m == null) return null;
+        m.setAccessible(true);
+        return m.invoke(target);
+    }
+
+    private static java.lang.reflect.Method findMethod(Class<?> c, String name, int paramCount) {
+        while (c != null) {
+            for (java.lang.reflect.Method m : c.getDeclaredMethods()) {
+                if (m.getName().equals(name) && m.getParameterCount() == paramCount) {
+                    return m;
+                }
+            }
+            c = c.getSuperclass();
+        }
+        return null;
     }
 
     private static boolean startedOnReorderHandle(Node node) {

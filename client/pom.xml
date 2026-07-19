@@ -110,6 +110,12 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>dk.dtu.ClientApp</mainClass>
+                            <!-- Allow the "Auto-fit columns" reflection into the
+                                 JavaFX TableView skin's content-measuring method. -->
+                            <options>
+                                <option>--add-opens</option>
+                                <option>javafx.controls/javafx.scene.control.skin=ALL-UNNAMED</option>
+                            </options>
                         </configuration>
                     </execution>
                 </executions>

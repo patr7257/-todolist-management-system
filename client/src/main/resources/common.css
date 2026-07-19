@@ -443,7 +443,9 @@
     -fx-alignment: center;
     -fx-padding: 6 8;
     -fx-text-fill: -color-fg-default;
-    -fx-border-color: transparent;
+    /* Vertical split line between columns on every row (matches the header) */
+    -fx-border-color: transparent -color-border-muted transparent transparent;
+    -fx-border-width: 0 1 0 0;
 }
 
 .app-table .table-row-cell {
@@ -469,4 +471,22 @@
 /* Empty-table placeholder */
 .app-table .placeholder .label {
     -fx-text-fill: -color-fg-subtle;
+}
+
+/* Bottom "Auto-fit columns" button (next to create/add link) */
+.autofit-button {
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-padding: 6 12;
+    -fx-background-radius: 8;
+}
+
+.autofit-button:hover {
+    -fx-background-color: -color-accent-subtle;
+}
+
+.autofit-button .app-icon {
+    -fx-icon-color: -color-accent-fg;
 }
