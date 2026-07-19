@@ -207,12 +207,8 @@ public final class ClientConnectDialog {
 
         Scene scene = new Scene(container, 900, 300);
 
-        // Apply client stylesheet
-        try {
-            scene.getStylesheets().add(ClientConnectDialog.class.getResource("/common.css").toExternalForm());
-        } catch (Exception ex) {
-            System.out.println("Warning: Could not load common.css");
-        }
+        // Apply the brand overlay for the current theme (light/dark warm tokens)
+        DarkModeManager.applyBrand(scene.getStylesheets());
 
         stage.setScene(scene);
         stage.setMinWidth(900);

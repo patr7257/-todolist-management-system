@@ -716,17 +716,18 @@ public class D_TodoListView {
         showTaskColumnDialog();
     }
 
-    // Row tints
+    // Row tints. The looked-up -status-*-bg colors resolve per theme
+    // (common.css light tokens, theme-warm-dark.css dark tokens).
     private String getTintColorForStatus(String status) {
         if (status == null || status.isBlank()) return "";
         try {
             TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
             return switch (taskStatus) {
-                case NOT_STARTED -> "-fx-background-color: rgba(231, 76, 60, 0.20);";
-                case IN_PROGRESS -> "-fx-background-color: rgba(52, 152, 219, 0.20);";
-                case DELAYED -> "-fx-background-color: rgba(243, 156, 18, 0.20);";
-                case NEED_HELP -> "-fx-background-color: rgba(155, 89, 182, 0.20);";
-                case DONE -> "-fx-background-color: rgba(39, 174, 96, 0.20);";
+                case NOT_STARTED -> "-fx-background-color: -status-todo-bg;";
+                case IN_PROGRESS -> "-fx-background-color: -status-prog-bg;";
+                case DELAYED -> "-fx-background-color: -status-late-bg;";
+                case NEED_HELP -> "-fx-background-color: -status-help-bg;";
+                case DONE -> "-fx-background-color: -status-done-bg;";
             };
         } catch (Exception e) {
             return "";

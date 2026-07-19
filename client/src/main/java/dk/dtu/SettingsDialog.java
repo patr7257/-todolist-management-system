@@ -119,14 +119,8 @@ public class SettingsDialog extends Dialog<ButtonType> {
      * inside this dialog and any sub-windows it opens.
      */
     private void attachBrandStylesheet(java.util.List<String> stylesheets) {
-        try {
-            String css = getClass().getResource("/common.css").toExternalForm();
-            if (!stylesheets.contains(css)) {
-                stylesheets.add(css);
-            }
-        } catch (Exception ignored) {
-            // Brand overlay is optional; AtlantaFX still themes the dialog.
-        }
+        // Delegates so the dialog picks up the current light/dark warm tokens.
+        DarkModeManager.applyBrand(stylesheets);
     }
 
     /**
