@@ -5,15 +5,16 @@ import dk.dtu.ClientConnectDialog;
 import dk.dtu.SceneNavigator;
 import dk.dtu.ServerPrefs;
 import dk.dtu.shared.Config;
+import dk.dtu.ui.Icons;
 import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -30,14 +31,16 @@ public class A_WelcomeScreen {
 
 	public Scene createScene() {
 
-    // Logo
-    ImageView logo = new ImageView(new Image(
-            getClass().getResource("/Icons/todo.png").toExternalForm()));
-    logo.setFitWidth(70);
-    logo.setPreserveRatio(true);
+    // Logo: violet brand mark (themed vector icon)
+    FontIcon logo = Icons.checklist(96);
+    logo.getStyleClass().add("brand-logo");
 
 	Label title = new Label("TodoList Management System");
     title.getStyleClass().add("welcome-title");
+    title.setWrapText(true);
+    title.setMaxWidth(560);
+    title.setAlignment(Pos.CENTER);
+    title.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
     Label tagline = new Label("Lets remember all of our ideas, yay!");
     tagline.getStyleClass().add("welcome-tagline");
@@ -67,8 +70,16 @@ public class A_WelcomeScreen {
     VBox headerBox = new VBox(5, logo, title);
     headerBox.setAlignment(Pos.CENTER);
 
-    // Root layout: spacing mainly between header, subtitle, button, tagline
-    VBox root = new VBox(15, headerBox, connectionStatus, connectionNote, connectButton, loginButton, tagline);
+    // Content as a tidy, fixed-width centered column. A StackPane wrapper
+    // guarantees the column is centered in the scene regardless of how the
+    // outer BorderPane (sidebar) sizes the content region.
+    VBox column = new VBox(15, headerBox, connectionStatus, connectionNote, connectButton, loginButton, tagline);
+    column.setAlignment(Pos.CENTER);
+    column.setFillWidth(false);
+    column.setMaxWidth(560);
+
+    StackPane root = new StackPane(column);
+    StackPane.setAlignment(column, Pos.CENTER);
     root.setAlignment(Pos.CENTER);
     root.getStyleClass().add("welcome-screen");
 	root.setPadding(new Insets(10, 0, 0, 0));

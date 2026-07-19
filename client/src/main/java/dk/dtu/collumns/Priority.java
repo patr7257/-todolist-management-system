@@ -250,7 +250,7 @@ public final class Priority {
         b.setPrefSize(22, 14);
         b.setMinSize(22, 14);
         b.setMaxSize(22, 14);
-        b.setStyle("-fx-font-size: 9px; -fx-padding: 0;");
+        b.getStyleClass().add("priority-cell-button");
         return b;
     }
 

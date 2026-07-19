@@ -3,12 +3,12 @@ package dk.dtu.collumns;
 import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Tasks;
 import dk.dtu.shared.Config;
+import dk.dtu.ui.Icons;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 public class TaskDeleteColumn implements Column<Helpers.TaskEntry> {
 
@@ -41,16 +41,11 @@ public class TaskDeleteColumn implements Column<Helpers.TaskEntry> {
         deleteButton.setPrefWidth(prefWidth());
         deleteButton.setMinWidth(prefWidth());
         deleteButton.setMaxWidth(prefWidth());
-        deleteButton.getStyleClass().add("list-col-delete-button");
+        deleteButton.getStyleClass().add("task-col-delete-button");
 
-        try {
-            ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/Icons/deleteicon.png")));
-            deleteIcon.setFitWidth(28);
-            deleteIcon.setFitHeight(28);
-            deleteButton.setGraphic(deleteIcon);
-        } catch (Exception e) {
-            deleteButton.setText("X");
-        }
+        FontIcon deleteIcon = Icons.delete();
+        deleteIcon.getStyleClass().add("icon-delete");
+        deleteButton.setGraphic(deleteIcon);
 
         deleteButton.addEventFilter(MouseEvent.MOUSE_PRESSED, evt -> {
             evt.consume();

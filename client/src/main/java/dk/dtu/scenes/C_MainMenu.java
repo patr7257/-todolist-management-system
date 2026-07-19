@@ -8,6 +8,7 @@ import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Lists;
 import dk.dtu.methods.Users;
 import dk.dtu.shared.Config;
+import dk.dtu.ui.Icons;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -143,10 +144,18 @@ public class C_MainMenu {
         if (loginMessage == null || loginMessage.isBlank()) return;
 
         tempMessageLabel.setText(loginMessage);
-        tempMessageLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+        if (!tempMessageLabel.getStyleClass().contains("status-connected")) {
+            tempMessageLabel.getStyleClass().add("status-connected");
+        }
+        // font-weight is emphasis, not a theme color, so it stays inline
+        tempMessageLabel.setStyle("-fx-font-weight: bold;");
 
         PauseTransition pt = new PauseTransition(Duration.seconds(2));
-        pt.setOnFinished(e -> tempMessageLabel.setText(""));
+        pt.setOnFinished(e -> {
+            tempMessageLabel.setText("");
+            tempMessageLabel.getStyleClass().remove("status-connected");
+            tempMessageLabel.setStyle("");
+        });
         pt.play();
     }
 
@@ -192,6 +201,9 @@ public class C_MainMenu {
     }
 
     private void configureListView(double tableWidth) {
+        if (!listsView.getStyleClass().contains("list-view")) {
+            listsView.getStyleClass().add("list-view");
+        }
         listsView.setMinWidth(tableWidth);
         listsView.setPrefWidth(tableWidth);
         listsView.setMaxWidth(Double.MAX_VALUE);
@@ -262,11 +274,11 @@ public class C_MainMenu {
                 setOnDragEntered(evt -> {
                     if (evt.getGestureSource() == this) return;
                     if (evt.getDragboard() != null && evt.getDragboard().hasString() && !isEmpty()) {
-                        row.setStyle("-fx-background-color: rgba(0, 0, 0, 0.08);");
+                        if (!row.getStyleClass().contains("drag-over")) row.getStyleClass().add("drag-over");
                     }
                 });
 
-                setOnDragExited(evt -> row.setStyle(""));
+                setOnDragExited(evt -> row.getStyleClass().remove("drag-over"));
 
                 setOnDragDropped(evt -> {
                     Dragboard db = evt.getDragboard();
@@ -302,7 +314,7 @@ public class C_MainMenu {
 
                     evt.setDropCompleted(true);
                     evt.consume();
-                    row.setStyle("");
+                    row.getStyleClass().remove("drag-over");
 
                     persistListOrder(view.getItems());
                 });
@@ -879,16 +891,17 @@ public class C_MainMenu {
 
         choicesView.setCellFactory(lv -> new ListCell<>() {
             private final CheckBox cb = new CheckBox();
-            private final Label dragHandle = new Label("≡");
+            private final Label dragHandle = new Label();
             private final HBox row = new HBox(8, dragHandle, cb);
 
             {
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
 
+                dragHandle.setGraphic(Icons.reorder());
                 dragHandle.setMinWidth(18);
                 dragHandle.setPrefWidth(18);
                 dragHandle.setAlignment(Pos.CENTER);
-                dragHandle.setStyle("-fx-text-fill: #666; -fx-cursor: open-hand; -fx-font-size: 14px;");
+                dragHandle.getStyleClass().add("reorder-handle");
 
                 dragHandle.setOnDragDetected(evt -> {
                     if (getItem() == null) return;
@@ -910,11 +923,11 @@ public class C_MainMenu {
                 setOnDragEntered(evt -> {
                     if (evt.getGestureSource() == this) return;
                     if (evt.getDragboard() != null && evt.getDragboard().hasString() && !isEmpty()) {
-                        setStyle("-fx-background-color: rgba(0, 0, 0, 0.08);");
+                        if (!getStyleClass().contains("drag-over")) getStyleClass().add("drag-over");
                     }
                 });
 
-                setOnDragExited(evt -> setStyle(""));
+                setOnDragExited(evt -> getStyleClass().remove("drag-over"));
 
                 setOnDragDropped(evt -> {
                     Dragboard db = evt.getDragboard();
@@ -947,7 +960,7 @@ public class C_MainMenu {
                     evt.consume();
                 });
 
-                setOnDragDone(evt -> setStyle(""));
+                setOnDragDone(evt -> getStyleClass().remove("drag-over"));
             }
 
             @Override

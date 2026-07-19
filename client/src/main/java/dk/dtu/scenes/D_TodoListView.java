@@ -11,6 +11,7 @@ import dk.dtu.methods.Tasks;
 import dk.dtu.methods.Users;
 import dk.dtu.shared.Config;
 import dk.dtu.shared.TaskStatus;
+import dk.dtu.ui.Icons;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -91,7 +92,7 @@ public class D_TodoListView {
 
         tasksView.setPrefHeight(400);
         tasksView.setMaxWidth(Double.MAX_VALUE);
-        tasksView.getStyleClass().add("todolist-tasks");
+        tasksView.getStyleClass().addAll("todolist-tasks", "list-view");
 
         Runnable refreshTasks = this::reloadTasks;
 
@@ -574,7 +575,7 @@ public class D_TodoListView {
 
                 setOnDragDone(evt -> {
                     setOpacity(1.0);
-                    row.setStyle("");
+                    row.getStyleClass().remove("drag-over");
                 });
 
                 setOnDragOver(evt -> {
@@ -586,11 +587,11 @@ public class D_TodoListView {
                 setOnDragEntered(evt -> {
                     if (evt.getGestureSource() == this) return;
                     if (evt.getDragboard() != null && evt.getDragboard().hasString() && !isEmpty()) {
-                        row.setStyle("-fx-background-color: rgba(0, 0, 0, 0.08);");
+                        if (!row.getStyleClass().contains("drag-over")) row.getStyleClass().add("drag-over");
                     }
                 });
 
-                setOnDragExited(evt -> row.setStyle(""));
+                setOnDragExited(evt -> row.getStyleClass().remove("drag-over"));
 
                 setOnDragDropped(evt -> {
                     Dragboard db = evt.getDragboard();
@@ -627,7 +628,7 @@ public class D_TodoListView {
                     evt.setDropCompleted(true);
                     evt.consume();
 
-                    row.setStyle("");
+                    row.getStyleClass().remove("drag-over");
                     persistTaskOrder(view.getItems());
                 });
             }
@@ -832,16 +833,17 @@ public class D_TodoListView {
 
         choicesView.setCellFactory(lv -> new ListCell<>() {
             private final CheckBox cb = new CheckBox();
-            private final Label dragHandle = new Label("≡");
+            private final Label dragHandle = new Label();
             private final HBox row = new HBox(8, dragHandle, cb);
 
             {
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
 
+                dragHandle.setGraphic(Icons.reorder());
                 dragHandle.setMinWidth(18);
                 dragHandle.setPrefWidth(18);
                 dragHandle.setAlignment(Pos.CENTER);
-                dragHandle.setStyle("-fx-text-fill: #666; -fx-cursor: open-hand; -fx-font-size: 14px;");
+                dragHandle.getStyleClass().add("reorder-handle");
 
                 dragHandle.setOnDragDetected(evt -> {
                     if (getItem() == null) return;
@@ -863,11 +865,11 @@ public class D_TodoListView {
                 setOnDragEntered(evt -> {
                     if (evt.getGestureSource() == this) return;
                     if (evt.getDragboard() != null && evt.getDragboard().hasString() && !isEmpty()) {
-                        setStyle("-fx-background-color: rgba(0, 0, 0, 0.08);");
+                        if (!getStyleClass().contains("drag-over")) getStyleClass().add("drag-over");
                     }
                 });
 
-                setOnDragExited(evt -> setStyle(""));
+                setOnDragExited(evt -> getStyleClass().remove("drag-over"));
 
                 setOnDragDropped(evt -> {
                     Dragboard db = evt.getDragboard();
@@ -900,7 +902,7 @@ public class D_TodoListView {
                     evt.consume();
                 });
 
-                setOnDragDone(evt -> setStyle(""));
+                setOnDragDone(evt -> getStyleClass().remove("drag-over"));
             }
 
             @Override
