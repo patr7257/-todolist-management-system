@@ -141,6 +141,18 @@ build-installers.yml` builds Windows and macOS installers automatically on
 every push of a `v*` tag (and on manual `workflow_dispatch`), and attaches
 them to a GitHub Release.
 
+- The jlinked runtime must include every JDK module the app touches, not just
+  the JavaFX ones. The CI `--add-modules` list therefore names `java.logging`
+  (Ikonli and JNA use `java.util.logging`), `java.naming`, `java.sql`,
+  `java.management`, `jdk.crypto.ec`, `java.instrument`, etc., plus the JavaFX
+  modules. Adding a client dependency that needs a new JDK module means adding
+  that module here too: a missing one makes the packaged app crash silently at
+  startup (`NoClassDefFoundError`) even though `mvn javafx:run` works fine.
+- The client jpackage step also passes
+  `--add-opens javafx.controls/javafx.scene.control.skin=ALL-UNNAMED` so the
+  "Auto-fit columns" reflection into the TableView skin works in the packaged
+  build (the same option is in `client/pom.xml` for `mvn javafx:run`).
+
 ## Notable conventions
 
 - Package root is `dk.dtu` for all three modules (`dk.dtu.shared.*` for the
@@ -151,6 +163,17 @@ them to a GitHub Release.
   `responses`; there is no direct RPC. All command/response string constants
   live in `dk.dtu.shared.TupleSpaces`, so grep there first when tracing a
   feature end to end.
+- The client pools jSpace connections in `dk.dtu.methods.Spaces`: one open
+  `RemoteSpace` per space URI, reused for the session, with a global `IO_LOCK`
+  serializing operations (the app is single-user at a time). Use `Spaces.get(uri)`
+  instead of `new RemoteSpace(uri)`; the notification listener keeps its own
+  dedicated connection OUTSIDE that lock. `Users.getUsersCached` caches the user
+  list so owner dropdowns do one query per view, not one per row.
+- The client visual layer is AtlantaFX (global Primer theme) + one brand
+  stylesheet (`common.css`); vector icons come from Ikonli via `dk.dtu.ui.Icons`;
+  the lists/tasks tables are real `TableView`s built by the `dk.dtu.ui.Tables`
+  adapter from the `dk.dtu.collumns.*` `Column` classes; `dk.dtu.ui.WindowChrome`
+  darkens the native Windows title bar via the Win32 DWM API (JNA).
 - Data changes are pushed to clients as a single generic `data_changed`
   notification (no per-entity notification types); clients react by
   refetching the current view rather than applying incremental updates.
