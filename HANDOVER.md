@@ -1,4 +1,4 @@
-# HANDOVER
+﻿# HANDOVER
 
 ## Date / branch / PR / CI
 - Date: 2026-07-19
@@ -36,15 +36,15 @@ DONE and shipped (v1.3.0 -> v1.3.1 -> v1.3.2):
 ## Verbatim resume commands (PowerShell)
 Build everything (jSpace must already be installed locally):
 ```
-cd "C:\Users\pr\repos\1-Personal\-todolist-management-system"; mvn clean install
+cd "C:\Users\pr\repos\1-Personal\TodoList"; mvn clean install
 ```
 Run the client from source against the hosted server (your normal server):
 ```
-cd "C:\Users\pr\repos\1-Personal\-todolist-management-system\client"; mvn -q javafx:run -Djavafx.run.jvmArgs="-Dtodolist.server.ip=100.100.220.67 -Dtodolist.port=9001"
+cd "C:\Users\pr\repos\1-Personal\TodoList\client"; mvn -q javafx:run -Djavafx.run.jvmArgs="-Dtodolist.server.ip=100.100.220.67 -Dtodolist.port=9001"
 ```
 Screenshot the running client window (auto-numbered PNGs in `screenshots\`):
 ```
-cd "C:\Users\pr\repos\1-Personal\-todolist-management-system"; powershell -ExecutionPolicy Bypass -File scripts\snap.ps1
+cd "C:\Users\pr\repos\1-Personal\TodoList"; powershell -ExecutionPolicy Bypass -File scripts\snap.ps1
 ```
 
 ## Gotchas discovered this session

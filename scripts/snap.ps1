@@ -1,11 +1,11 @@
-# snap.ps1 - capture the CURRENT TodoList client window to the next numbered PNG.
+﻿# snap.ps1 - capture the CURRENT TodoList client window to the next numbered PNG.
 #
 # Paste the SAME one line each time; it auto-increments the filename, so you never
 # edit the command. Run it once per screen you want captured (main menu, a task
 # list, and each again in dark mode). Uses PrintWindow, so the app does not need to
 # be in the foreground.
 #
-#   cd "C:\Users\pr\repos\1-Personal\-todolist-management-system"; powershell -ExecutionPolicy Bypass -File scripts\snap.ps1
+#   cd "C:\Users\pr\repos\1-Personal\TodoList"; powershell -ExecutionPolicy Bypass -File scripts\snap.ps1
 
 Set-Location (Join-Path $PSScriptRoot '..')
 $outDir = Join-Path (Get-Location) 'screenshots'

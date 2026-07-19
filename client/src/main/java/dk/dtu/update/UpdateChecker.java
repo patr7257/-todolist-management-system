@@ -28,7 +28,7 @@ import java.util.Optional;
 public class UpdateChecker {
 
     /** Owner/repo slug. The leading hyphen in the repo name is intentional. */
-    private static final String REPO = "patr7257/-todolist-management-system";
+    private static final String REPO = "patr7257/TodoList";
 
     private static final String LATEST_RELEASE_URL =
             "https://api.github.com/repos/" + REPO + "/releases/latest";

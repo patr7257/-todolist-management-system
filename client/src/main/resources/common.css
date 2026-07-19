@@ -1,51 +1,96 @@
 /*
- * Brand overlay for the TodoList client.
+ * Brand overlay for the TodoList client: "Soft Warm Minimal".
  *
  * SINGLE STYLING AUTHORITY. This is the ONE brand layer on top of the AtlantaFX
  * Primer theme (set globally as the user-agent stylesheet, swapped light/dark by
  * DarkModeManager). It:
- *   1. overrides AtlantaFX looked-up accent colors to a violet/cyan brand ramp, and
- *   2. defines semantic style classes for the app's own pieces (sidebar, pseudo
- *      tables, cards, titles, status/priority colors, vector icons).
+ *   1. overrides the AtlantaFX looked-up colors with a warm paper palette
+ *      (LIGHT values live here; theme-warm-dark.css re-overrides them for dark,
+ *      attached after this file by DarkModeManager.applyBrand), and
+ *   2. defines semantic style classes for the app's own pieces (sidebar, cards,
+ *      tables, titles, status pills, vector icons).
  *
- * It deliberately builds on AtlantaFX looked-up colors (-color-bg-*, -color-fg-*,
- * -color-border-*, -color-accent-*) so BOTH the light (PrimerLight) and dark
- * (PrimerDark) grounds adapt automatically. Nothing here hardcodes a background or
- * foreground that would fight the theme. Inline setStyle in Java is only for truly
- * dynamic per-instance values (e.g. a user-chosen color), never for theme.
+ * Everything below the token block references looked-up colors only, so the
+ * same rules render both the warm-paper light theme and the warm-charcoal dark
+ * theme. Inline setStyle in Java is only for truly dynamic per-instance values
+ * (e.g. a user-chosen color), never for theme.
+ *
+ * Design source: the approved "Soft Warm Minimal" mockup (style 4): warm paper
+ * neutrals, serif display titles (Georgia), one desaturated iris accent, and
+ * task status as soft tinted pills.
  */
 
 .root {
-    /* Brand ramp (violet primary, cyan secondary) */
-    -brand-violet: #5B4FE6;
-    -brand-violet-strong: #4F46E5;
-    -brand-violet-soft: #8B80F9;
-    -brand-cyan: #06B6D4;
+    /* ---- Warm paper palette (LIGHT). Dark twin: theme-warm-dark.css ---- */
+    -color-bg-default:  #F7F5F1;   /* page ground: warm paper            */
+    -color-bg-subtle:   #FFFFFF;   /* raised cards: clean white          */
+    -color-bg-inset:    #F1EEE8;   /* headers, wells, sidebar            */
+    -color-bg-overlay:  #FFFFFF;
 
-    /* Override AtlantaFX accent to violet: drives buttons, links, focus, selection */
-    -color-accent-fg: #6366F1;
-    -color-accent-emphasis: -brand-violet;
-    -color-accent-emphasis-plus: -brand-violet-strong;
-    -color-accent-muted: -brand-violet-soft;
-    -color-accent-subtle: rgba(99, 102, 241, 0.16);
+    -color-fg-default:  #2E2A26;   /* warm ink                           */
+    -color-fg-muted:    #6E675E;
+    -color-fg-subtle:   #A39B8F;
+    -color-fg-emphasis: #FFFFFF;
+
+    -color-border-default: #E4DFD6;
+    -color-border-muted:   #ECE8E0;
+    -color-border-subtle:  #F1EEE8;
+    -color-shadow-default: rgba(70, 60, 45, 0.10);
+
+    /* Desaturated iris accent */
+    -color-accent-fg:        #4F4595;
+    -color-accent-emphasis:  #6E62C9;
+    -color-accent-emphasis-plus: #5A50A8;
+    -color-accent-muted:     #C9C2EC;
+    -color-accent-subtle:    #EDEAF9;
+
+    -color-success-fg:       #4E7D5B;
+    -color-success-emphasis: #4E7D5B;
+    -color-success-muted:    #BFD8C6;
+    -color-success-subtle:   #E4EEE6;
+
+    -color-warning-fg:       #A5762A;
+    -color-warning-emphasis: #A5762A;
+    -color-warning-muted:    #E7D3AC;
+    -color-warning-subtle:   #F5EBD8;
+
+    -color-danger-fg:        #A5524E;
+    -color-danger-emphasis:  #A5524E;
+    -color-danger-muted:     #E7BFBD;
+    -color-danger-subtle:    #F5E3E1;
+
+    /* Task status pills (text / tinted background pairs, 4.5:1 on both) */
+    -status-todo:    #A5524E;  -status-todo-bg:  #F5E3E1;
+    -status-prog:    #4A6FA5;  -status-prog-bg:  #E3EAF4;
+    -status-late:    #A5762A;  -status-late-bg:  #F5EBD8;
+    -status-help:    #7A5AB8;  -status-help-bg:  #ECE5F7;
+    -status-done:    #4E7D5B;  -status-done-bg:  #E4EEE6;
+
+    /* Completion bands (warm-tuned) */
+    -band-high: #4E7D5B;
+    -band-mid:  #A5762A;
+    -band-low:  #C07A3D;
+    -band-none: #A5524E;
+
+    /* Warm gold used for the sun/moon toggle glyph */
+    -warm-gold: #C99A3C;
 
     -fx-font-family: "Segoe UI", "Arial";
 }
 
 /* ===========================================================================
  * Vector icons (Ikonli). Colored via the theme so they follow light/dark.
- * The old fixed-color PNG icons vanished in dark mode; these never do.
  * ========================================================================= */
 
 .app-icon {
     -fx-icon-color: -color-fg-muted;
 }
 
-/* Sidebar icons brighten to the violet accent on hover / active nav. */
+/* Sidebar icons shift to the iris accent on hover / active nav. */
 .sidebar-button:hover .app-icon,
 .sidebar-button:armed .app-icon,
 .sidebar-button:focused .app-icon {
-    -fx-icon-color: -color-accent-fg;
+    -fx-icon-color: -color-accent-emphasis;
 }
 
 /* Row action icons (delete gets a danger tint on hover). */
@@ -55,7 +100,7 @@
 .reorder-handle .app-icon { -fx-icon-color: -color-fg-subtle; }
 
 /* ===========================================================================
- * Screen roots + titles
+ * Screen roots + titles. Display titles speak in a quiet serif voice.
  * ========================================================================= */
 
 .welcome-screen,
@@ -72,15 +117,18 @@
 
 /* Welcome hero */
 .welcome-title {
-    -fx-font-size: 34px;
-    -fx-font-weight: 800;
+    -fx-font-family: "Georgia", "Times New Roman";
+    -fx-font-size: 36px;
+    -fx-font-weight: 500;
     -fx-text-fill: -color-fg-default;
     -fx-padding: 12 0 6 0;
     -fx-text-alignment: center;
 }
 
 .welcome-tagline {
-    -fx-font-size: 18px;
+    -fx-font-family: "Georgia", "Times New Roman";
+    -fx-font-style: italic;
+    -fx-font-size: 17px;
     -fx-text-fill: -color-fg-muted;
     -fx-padding: 4 0 0 0;
 }
@@ -91,21 +139,23 @@
     -fx-font-style: italic;
 }
 
-/* Violet checklist brand mark on the welcome screen */
+/* Iris checklist brand mark on the welcome screen */
 .brand-logo {
     -fx-icon-color: -color-accent-emphasis;
 }
 
 .login-title,
 .mainmenu-title {
+    -fx-font-family: "Georgia", "Times New Roman";
     -fx-font-size: 30px;
-    -fx-font-weight: bold;
+    -fx-font-weight: 500;
     -fx-text-fill: -color-fg-default;
 }
 
 .todolist-title {
+    -fx-font-family: "Georgia", "Times New Roman";
     -fx-font-size: 26px;
-    -fx-font-weight: 700;
+    -fx-font-weight: 500;
     -fx-text-fill: -color-fg-default;
 }
 
@@ -120,7 +170,7 @@
 }
 
 /* ===========================================================================
- * Cards (login box, config + settings panels)
+ * Cards (login box, config + settings panels): white on paper, soft shadow.
  * ========================================================================= */
 
 .login-box,
@@ -131,7 +181,7 @@
     -fx-border-color: -color-border-default;
     -fx-border-width: 1px;
     -fx-padding: 30;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.10), 24, 0, 0, 6);
+    -fx-effect: dropshadow(gaussian, -color-shadow-default, 26, 0, 0, 8);
 }
 
 /* Base sizing for the big main-user buttons (color applied inline per user). */
@@ -185,7 +235,7 @@
 
 .settings-panel {
     -fx-background-color: -color-bg-inset;
-    -fx-background-radius: 10;
+    -fx-background-radius: 12;
     -fx-padding: 15;
 }
 
@@ -201,51 +251,49 @@
 }
 
 /* ===========================================================================
- * Pseudo-table (main menu list of lists + task view). Kept as a ListView of
- * HBox rows, styled to read as a real modern table: header with an accent
- * underline, a rounded card container, hover + selection highlights, and light
- * row separators.
+ * Pseudo-table (main menu list of lists + task view). ListView of HBox rows
+ * styled as a calm card: soft inset header, rounded container, warm row
+ * separators, gentle hover + accent-subtle selection.
  * ========================================================================= */
 
 .list-header,
 .tasks-header {
-    -fx-font-size: 13px;
-    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-subtle;
     -fx-font-weight: 700;
     -fx-padding: 12 10;
     -fx-background-color: -color-bg-inset;
-    -fx-background-radius: 12 12 0 0;
+    -fx-background-radius: 14 14 0 0;
     -fx-border-color: -color-border-default;
-    -fx-border-width: 1 1 2 1;
-    -fx-border-radius: 12 12 0 0;
+    -fx-border-width: 1 1 1 1;
+    -fx-border-radius: 14 14 0 0;
 }
 
 .list-view {
-    -fx-background-color: -color-bg-default;
+    -fx-background-color: -color-bg-subtle;
     -fx-border-color: -color-border-default;
     -fx-border-width: 0 1 1 1;
-    -fx-border-radius: 0 0 12 12;
-    -fx-background-radius: 0 0 12 12;
+    -fx-border-radius: 0 0 14 14;
+    -fx-background-radius: 0 0 14 14;
     -fx-padding: 0;
 }
 
 .list-view .list-cell {
-    -fx-padding: 8 6;
+    -fx-padding: 9 6;
     -fx-background-color: transparent;
     -fx-border-color: transparent transparent -color-border-muted transparent;
     -fx-border-width: 0 0 1 0;
 }
 
 .list-view .list-cell:filled:hover {
-    -fx-background-color: -color-bg-subtle;
+    -fx-background-color: -color-bg-inset;
 }
 
 .list-view .list-cell:filled:selected {
     -fx-background-color: -color-accent-subtle;
 }
 
-/* Theme-aware drag-over highlight (replaces the old black rgba overlay that was
-   invisible in dark mode). Phase B adds/removes this class instead of setStyle. */
+/* Theme-aware drag-over highlight */
 .drag-over {
     -fx-background-color: -color-accent-subtle;
 }
@@ -276,7 +324,7 @@
 .list-col-delete-button,
 .task-col-delete-button {
     -fx-background-color: transparent;
-    -fx-background-radius: 8;
+    -fx-background-radius: 10;
     -fx-padding: 4 8;
     -fx-cursor: hand;
 }
@@ -323,19 +371,22 @@
     -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-border-color: transparent;
-    -fx-padding: 6 2;
+    -fx-padding: 6 10;
+    -fx-background-radius: 10;
+    -fx-underline: false;
 }
 
 .create-link:hover {
-    -fx-underline: true;
+    -fx-background-color: -color-accent-subtle;
+    -fx-underline: false;
 }
 
 /* ===========================================================================
- * Sidebar
+ * Sidebar: warm inset strip
  * ========================================================================= */
 
 .sidebar {
-    -fx-background-color: -color-bg-subtle;
+    -fx-background-color: -color-bg-inset;
     -fx-border-color: -color-border-default;
     -fx-border-width: 0 0 0 1;
 }
@@ -355,26 +406,48 @@
     -fx-background-color: -color-accent-muted;
 }
 
-/* Theme toggle glyph keeps a warm accent so it reads as sun/moon */
+/* Theme toggle glyph keeps a warm gold so it reads as sun/moon */
 .theme-toggle-button .app-icon {
-    -fx-icon-color: #F5A623;
+    -fx-icon-color: -warm-gold;
 }
 
 /* ===========================================================================
- * Task status text colors (legible on BOTH light and dark grounds)
+ * Task status: soft tinted pills, legible on BOTH warm grounds.
+ * The class lands on the label / combo cell, so pad + round it into a pill.
  * ========================================================================= */
 
-.status-NOT_STARTED { -fx-text-fill: #E5484D; -fx-font-size: 13px; -fx-font-weight: bold; }
-.status-IN_PROGRESS { -fx-text-fill: #4C8DFF; -fx-font-size: 13px; -fx-font-weight: bold; }
-.status-DELAYED     { -fx-text-fill: #F5A623; -fx-font-size: 13px; -fx-font-weight: bold; }
-.status-NEED_HELP   { -fx-text-fill: #9B7DF0; -fx-font-size: 13px; -fx-font-weight: bold; }
-.status-DONE        { -fx-text-fill: #2FA84F; -fx-font-size: 13px; -fx-font-weight: bold; }
+.status-NOT_STARTED,
+.status-IN_PROGRESS,
+.status-DELAYED,
+.status-NEED_HELP,
+.status-DONE {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 99;
+    -fx-padding: 2 10;
+}
 
-/* List completion progress-bar fills, by band (replace the Java hex literals). */
-.completion-high .bar { -fx-background-color: #2FA84F; }   /* >= 80% green  */
-.completion-mid  .bar { -fx-background-color: #F5A623; }   /* >= 50% amber  */
-.completion-low  .bar { -fx-background-color: #FB923C; }   /* >= 30% orange */
-.completion-none .bar { -fx-background-color: #E5484D; }   /* <  30% red (behind) */
+.status-NOT_STARTED { -fx-text-fill: -status-todo; -fx-background-color: -status-todo-bg; }
+.status-IN_PROGRESS { -fx-text-fill: -status-prog; -fx-background-color: -status-prog-bg; }
+.status-DELAYED     { -fx-text-fill: -status-late; -fx-background-color: -status-late-bg; }
+.status-NEED_HELP   { -fx-text-fill: -status-help; -fx-background-color: -status-help-bg; }
+.status-DONE        { -fx-text-fill: -status-done; -fx-background-color: -status-done-bg; }
+
+/* List completion progress-bar fills, by band */
+.completion-high .bar { -fx-background-color: -band-high; }   /* >= 80% */
+.completion-mid  .bar { -fx-background-color: -band-mid;  }   /* >= 50% */
+.completion-low  .bar { -fx-background-color: -band-low;  }   /* >= 30% */
+.completion-none .bar { -fx-background-color: -band-none; }   /* <  30% */
+
+/* Slimmer, rounded progress track */
+.progress-bar .track {
+    -fx-background-color: -color-border-muted;
+    -fx-background-radius: 99;
+}
+.progress-bar .bar {
+    -fx-background-radius: 99;
+    -fx-background-insets: 1;
+}
 
 /* Keep table combo boxes compact */
 .task-col-status,
@@ -386,29 +459,28 @@
 }
 
 /* ===========================================================================
- * Real TableView (lists + tasks). Native resizable/auto-fit columns with
- * vertical dividers, one scrollbar, hover/selection, and status row tint.
+ * Real TableView (lists + tasks): white card, inset header, warm dividers.
  * ========================================================================= */
 
 .app-table {
-    -fx-background-color: -color-bg-default;
+    -fx-background-color: -color-bg-subtle;
     -fx-border-color: -color-border-default;
     -fx-border-width: 1;
-    -fx-border-radius: 12;
-    -fx-background-radius: 12;
-    /* Native vertical dividers between columns */
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
     -fx-table-cell-border-color: -color-border-muted;
     -fx-padding: 0;
+    -fx-effect: dropshadow(gaussian, -color-shadow-default, 18, 0, 0, 4);
 }
 
 .app-table:focused {
-    -fx-background-color: -color-bg-default;
+    -fx-background-color: -color-bg-subtle;
 }
 
 /* Header */
 .app-table .column-header-background {
     -fx-background-color: -color-bg-inset;
-    -fx-background-radius: 12 12 0 0;
+    -fx-background-radius: 14 14 0 0;
 }
 
 .app-table .column-header-background .filler,
@@ -419,15 +491,15 @@
 .app-table .column-header {
     -fx-background-color: transparent;
     -fx-border-color: -color-border-muted;
-    -fx-border-width: 0 1 2 0;
+    -fx-border-width: 0 1 1 0;
     -fx-padding: 10 4;
     -fx-pref-height: 44px;
 }
 
 .app-table .column-header .label {
-    -fx-text-fill: -color-fg-muted;
+    -fx-text-fill: -color-fg-subtle;
     -fx-font-weight: 700;
-    -fx-font-size: 13px;
+    -fx-font-size: 12px;
     -fx-alignment: center;
 }
 
@@ -435,7 +507,7 @@
 .app-table .column-header .sort-order-dot,
 .app-table .column-header GLYPH,
 .app-table .column-header .arrow {
-    -fx-background-color: -color-accent-fg;
+    -fx-background-color: -color-accent-emphasis;
 }
 
 /* Body cells */
@@ -443,20 +515,19 @@
     -fx-alignment: center;
     -fx-padding: 6 8;
     -fx-text-fill: -color-fg-default;
-    /* Vertical split line between columns on every row (matches the header) */
     -fx-border-color: transparent -color-border-muted transparent transparent;
     -fx-border-width: 0 1 0 0;
 }
 
 .app-table .table-row-cell {
-    -fx-background-color: -color-bg-default;
+    -fx-background-color: -color-bg-subtle;
     -fx-border-color: -color-border-muted;
     -fx-border-width: 0 0 1 0;
-    -fx-cell-size: 44px;
+    -fx-cell-size: 46px;
 }
 
 .app-table .table-row-cell:hover {
-    -fx-background-color: -color-bg-subtle;
+    -fx-background-color: -color-bg-inset;
 }
 
 .app-table .table-row-cell:selected {
@@ -480,7 +551,7 @@
     -fx-font-weight: 600;
     -fx-cursor: hand;
     -fx-padding: 6 12;
-    -fx-background-radius: 8;
+    -fx-background-radius: 10;
 }
 
 .autofit-button:hover {
