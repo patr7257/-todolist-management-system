@@ -1,4 +1,4 @@
-# capture-app.ps1 - screenshot the running TodoList JavaFX window.
+﻿# capture-app.ps1 - screenshot the running TodoList JavaFX window.
 #
 # WHY: Playwright cannot drive a JavaFX desktop app, and a clean `mvn package` is
 # NOT evidence the UI looks right. This captures just the app window to a PNG so a
@@ -6,9 +6,9 @@
 #
 # LOOP (run each in its own terminal, then capture):
 #   1. Start the local server (seeds demo data on first run):
-#        cd "C:\Users\pr\repos\1-Personal\-todolist-management-system"; mvn -q -pl server -am exec:java
+#        cd "C:\Users\pr\repos\1-Personal\TodoList"; mvn -q -pl server -am exec:java
 #   2. Run the client:
-#        cd "C:\Users\pr\repos\1-Personal\-todolist-management-system"; mvn -q -pl client -am javafx:run
+#        cd "C:\Users\pr\repos\1-Personal\TodoList"; mvn -q -pl client -am javafx:run
 #   3. Navigate the client to the screen you want (and toggle dark mode for the dark shot),
 #      then run THIS script and type a label at the prompt (e.g. "mainmenu-dark").
 #
