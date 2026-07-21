@@ -115,8 +115,19 @@ public final class TodoApiClient {
 
     /** POST /lists. */
     public ListDto createList(String name) throws Exception {
+        return createList(name, null);
+    }
+
+    /**
+     * POST /lists carrying an optional owner (a desktop-superset field). The
+     * owner key is sent only when non-null; the API treats it as optional.
+     */
+    public ListDto createList(String name, String owner) throws Exception {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("name", name);
+        if (owner != null) {
+            body.put("owner", owner);
+        }
         String json = send("POST", "/lists", GSON_NULLS.toJson(body), true);
         return unwrapList(json);
     }
@@ -131,6 +142,17 @@ public final class TodoApiClient {
             body.put("sort", sort);
         }
         String json = send("PATCH", "/lists/" + enc(id), GSON.toJson(body), true);
+        return unwrapList(json);
+    }
+
+    /**
+     * PATCH /lists/{id} with an arbitrary field map. The map is sent verbatim
+     * with nulls preserved, so a null value clears the desktop-superset field
+     * (owner, priority, year, location, description). Only include the keys you
+     * intend to change.
+     */
+    public ListDto updateList(String id, Map<String, Object> patch) throws Exception {
+        String json = send("PATCH", "/lists/" + enc(id), GSON_NULLS.toJson(patch), true);
         return unwrapList(json);
     }
 

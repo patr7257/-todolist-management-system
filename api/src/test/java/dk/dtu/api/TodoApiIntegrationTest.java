@@ -3,6 +3,7 @@ package dk.dtu.api;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -151,6 +152,74 @@ class TodoApiIntegrationTest {
         assertFalse(todo.listExists(list.id()));
         assertTrue(todo.allItemsOrdered().stream().noneMatch(i -> i.id().equals(item.id())),
                 "items should cascade-delete with their list");
+    }
+
+    @Test
+    void listSupersetFieldsWriteAndReadBack() {
+        // Create carries an optional owner.
+        ListRow created = todo.insertList("Trip", "Alice");
+        assertEquals("Alice", created.owner());
+        assertNull(created.priority());
+        assertNull(created.year());
+        assertNull(created.location());
+        assertNull(created.description());
+
+        // Update persists every desktop-superset field.
+        Optional<ListRow> updated = todo.updateList(created.id(), List.of(
+                new ColumnValue("owner", ":owner", "Bob", Types.VARCHAR),
+                new ColumnValue("priority", ":priority", 3, Types.INTEGER),
+                new ColumnValue("year", ":year", 2027, Types.INTEGER),
+                new ColumnValue("location", ":location", "Aarhus", Types.VARCHAR),
+                new ColumnValue("description", ":description", "sommerferie", Types.VARCHAR)));
+        assertTrue(updated.isPresent());
+        assertEquals("Bob", updated.get().owner());
+        assertEquals(3, updated.get().priority());
+        assertEquals(2027, updated.get().year());
+        assertEquals("Aarhus", updated.get().location());
+        assertEquals("sommerferie", updated.get().description());
+
+        // Nulls clear the fields (desktop clears an owner/location/etc.).
+        Optional<ListRow> cleared = todo.updateList(created.id(), List.of(
+                new ColumnValue("owner", ":owner", null, Types.VARCHAR),
+                new ColumnValue("priority", ":priority", null, Types.INTEGER),
+                new ColumnValue("year", ":year", null, Types.INTEGER),
+                new ColumnValue("location", ":location", null, Types.VARCHAR),
+                new ColumnValue("description", ":description", null, Types.VARCHAR)));
+        assertTrue(cleared.isPresent());
+        assertNull(cleared.get().owner());
+        assertNull(cleared.get().priority());
+        assertNull(cleared.get().year());
+        assertNull(cleared.get().location());
+        assertNull(cleared.get().description());
+
+        // Read back through the ordered query used by GET /state after re-setting.
+        todo.updateList(created.id(), List.of(
+                new ColumnValue("year", ":year", 2030, Types.INTEGER)));
+        ListRow reread = todo.allListsOrdered().stream()
+                .filter(l -> l.id().equals(created.id())).findFirst().orElseThrow();
+        assertEquals(2030, reread.year());
+
+        todo.deleteList(created.id());
+    }
+
+    @Test
+    void itemYearWritesAndReadsBack() {
+        ListRow list = todo.insertList("Years");
+        ItemRow item = todo.insertItem(new NewItem(
+                list.id(), "task", null, "NOT_STARTED", null, null, null, null, seedUserId));
+        assertNull(item.year(), "year defaults to null on create");
+
+        Optional<ItemRow> updated = todo.updateItem(item.id(), List.of(
+                new ColumnValue("year", ":year", 2029, Types.INTEGER)));
+        assertTrue(updated.isPresent());
+        assertEquals(2029, updated.get().year());
+
+        Optional<ItemRow> cleared = todo.updateItem(item.id(), List.of(
+                new ColumnValue("year", ":year", null, Types.INTEGER)));
+        assertTrue(cleared.isPresent());
+        assertNull(cleared.get().year());
+
+        todo.deleteList(list.id());
     }
 
     @Test

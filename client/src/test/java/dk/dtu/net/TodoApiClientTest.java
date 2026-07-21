@@ -82,6 +82,9 @@ public class TodoApiClientTest {
                     + "\"done\":true,\"sort\":0,\"assigneeName\":\"Bob\"}}";
         } else if (path.endsWith("/lists") && ex.getRequestMethod().equals("POST")) {
             body = "{\"list\":{\"id\":\"l9\",\"name\":\"New\",\"sort\":0}}";
+        } else if (path.contains("/lists/") && ex.getRequestMethod().equals("PATCH")) {
+            body = "{\"list\":{\"id\":\"l1\",\"name\":\"Inbox\",\"sort\":0,\"owner\":null,"
+                    + "\"priority\":3,\"year\":2027,\"location\":\"Aarhus\",\"description\":\"trip\"}}";
         } else {
             body = "{\"ok\":true}";
         }
@@ -135,6 +138,51 @@ public class TodoApiClientTest {
         // priority/dueAt/status are omitted when null (the API defaults them).
         assertFalse(body.contains("\"priority\""));
         assertFalse(body.contains("\"status\""));
+    }
+
+    @Test
+    void createListWithOwnerSendsOwnerKey() throws Exception {
+        TodoApiClient client = new TodoApiClient(baseUrl, "tok");
+        client.createList("Trip", "Alice");
+
+        assertEquals("POST", lastMethod.get());
+        assertTrue(lastBody.get().contains("\"name\""));
+        assertTrue(lastBody.get().contains("\"owner\":\"Alice\""), "owner must be sent when non-null");
+    }
+
+    @Test
+    void createListWithoutOwnerOmitsOwnerKey() throws Exception {
+        TodoApiClient client = new TodoApiClient(baseUrl, "tok");
+        client.createList("Trip");
+
+        assertFalse(lastBody.get().contains("\"owner\""), "owner key must be omitted when null");
+    }
+
+    @Test
+    void updateListPatchSerializesNullToClearField() throws Exception {
+        TodoApiClient client = new TodoApiClient(baseUrl, "tok");
+        java.util.Map<String, Object> patch = new java.util.LinkedHashMap<>();
+        patch.put("owner", null); // null clears the owner
+        ListDto list = client.updateList("l1", patch);
+
+        assertEquals("PATCH", lastMethod.get());
+        assertTrue(lastBody.get().contains("\"owner\":null"),
+                "null values in a list patch must be serialized, not dropped");
+        assertEquals(3, list.priority());
+        assertEquals(2027, list.year());
+        assertEquals("Aarhus", list.location());
+    }
+
+    @Test
+    void updateListPatchSendsSupersetFieldValues() throws Exception {
+        TodoApiClient client = new TodoApiClient(baseUrl, "tok");
+        java.util.Map<String, Object> patch = new java.util.LinkedHashMap<>();
+        patch.put("priority", 3);
+        patch.put("year", 2027);
+        client.updateList("l1", patch);
+
+        assertTrue(lastBody.get().contains("\"priority\":3"));
+        assertTrue(lastBody.get().contains("\"year\":2027"));
     }
 
     @Test

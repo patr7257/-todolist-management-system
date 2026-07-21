@@ -19,8 +19,8 @@ import java.util.function.Consumer;
  * UI but id-based in the API: writes resolve the display name to an assignee id
  * via {@link ApiSession#idForName(String)}, reads show {@code assigneeName}.
  *
- * <p>The API does not expose a writable {@code year} on items yet, so
- * {@link #setTaskYear} throws {@link UnsupportedOperationException}.
+ * <p>The desktop-superset {@code year} on items is persisted through PATCH
+ * /items/{id}, alongside the website's own item fields.
  */
 public class Tasks {
 
@@ -137,7 +137,9 @@ public class Tasks {
                                    String taskId, int year) throws Exception {
         requireListId(listId);
         requireTaskId(taskId);
-        throw new UnsupportedOperationException("Editing task year is not supported by the todo API yet.");
+        Map<String, Object> patch = new LinkedHashMap<>();
+        patch.put("year", year);
+        ApiSession.get().client().updateItem(taskId, patch);
     }
 
     public static void setTaskLocation(String requestsUri, String responsesUri, String listId,

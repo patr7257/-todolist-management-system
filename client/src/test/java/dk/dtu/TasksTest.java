@@ -51,5 +51,21 @@ public class TasksTest {
             Tasks.deleteTask("req", "resp", "   ");
         });
     }
+
+    // setTaskYear now hits the API; its id guards still run before any network call.
+
+    @Test
+    public void testSetTaskYearRejectsBlankListId() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Tasks.setTaskYear("req", "resp", "   ", "task1", 2027);
+        });
+    }
+
+    @Test
+    public void testSetTaskYearRejectsNullTaskId() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Tasks.setTaskYear("req", "resp", "list1", null, 2027);
+        });
+    }
 }
 

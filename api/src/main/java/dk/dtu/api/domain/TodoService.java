@@ -66,11 +66,20 @@ public final class TodoService {
     }
 
     public ListRow insertList(String name) {
-        return jdbi.withHandle(h -> h
-                .createQuery("INSERT INTO lists (name) VALUES (:name) RETURNING *")
-                .bind("name", name)
-                .map((rs, ctx) -> mapList(rs))
-                .one());
+        return insertList(name, null);
+    }
+
+    /**
+     * Inserts a list with an optional owner (a desktop-superset column). A null
+     * owner leaves the column NULL, matching a website-created list.
+     */
+    public ListRow insertList(String name, String owner) {
+        return jdbi.withHandle(h -> {
+            Update u = h.createUpdate("INSERT INTO lists (name, owner) VALUES (:name, :owner) RETURNING *");
+            u.bind("name", name);
+            bindNullable(u, "owner", owner, Types.VARCHAR);
+            return u.executeAndReturnGeneratedKeys().map((rs, ctx) -> mapList(rs)).one();
+        });
     }
 
     public boolean listExists(String id) {
@@ -86,22 +95,12 @@ public final class TodoService {
     }
 
     /**
-     * Updates a list's name and/or sort. {@code name}/{@code sort} being null
-     * means "leave unchanged". Returns the updated row, or empty when the id is
-     * unknown (or not a valid uuid).
+     * Applies a validated set of list column assignments (already normalised by
+     * the controller). Returns the updated row, or empty when the id is unknown
+     * (or not a valid uuid) or the set is empty.
      */
-    public Optional<ListRow> updateList(String id, String name, Integer sort) {
-        if (!isUuid(id)) {
-            return Optional.empty();
-        }
-        List<ColumnValue> sets = new ArrayList<>();
-        if (name != null) {
-            sets.add(new ColumnValue("name", ":name", name, Types.VARCHAR));
-        }
-        if (sort != null) {
-            sets.add(new ColumnValue("sort", ":sort", sort, Types.INTEGER));
-        }
-        if (sets.isEmpty()) {
+    public Optional<ListRow> updateList(String id, List<ColumnValue> sets) {
+        if (!isUuid(id) || sets == null || sets.isEmpty()) {
             return Optional.empty();
         }
         return runUpdateReturning("lists", id, sets, this::mapList);

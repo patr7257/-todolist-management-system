@@ -165,6 +165,10 @@ public final class ItemsController {
             }
             sets.add(new ColumnValue("sort", ":sort", body.asInt("sort"), Types.INTEGER));
         }
+        if (body.has("year")) {
+            Integer year = readNullableInt(body, "year");
+            sets.add(new ColumnValue("year", ":year", year, Types.INTEGER));
+        }
 
         Optional<ItemRow> updated = todo.updateItem(id, sets);
         if (updated.isEmpty()) {
@@ -190,6 +194,11 @@ public final class ItemsController {
 
     /** null on JSON null, integer value on integer, else 400. */
     private static Integer readPriority(Body body, String key) {
+        return readNullableInt(body, key);
+    }
+
+    /** null on JSON null, integer value on integer, else 400. */
+    private static Integer readNullableInt(Body body, String key) {
         if (body.isNull(key)) {
             return null;
         }

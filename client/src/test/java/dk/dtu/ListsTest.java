@@ -55,4 +55,41 @@ public class ListsTest {
             );
         });
     }
+
+    // The desktop-superset setters guard their inputs before any network call.
+
+    @Test
+    public void testSetListOwnerRejectsBlankOwner() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Lists.setListOwner("req", "resp", "list1", "   ");
+        });
+    }
+
+    @Test
+    public void testSetListPriorityRejectsBlankId() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Lists.setListPriority("req", "resp", "   ", 1);
+        });
+    }
+
+    @Test
+    public void testSetListYearRejectsNullId() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Lists.setListYear("req", "resp", null, 2027);
+        });
+    }
+
+    @Test
+    public void testSetListDescriptionRejectsBlankId() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Lists.setListDescription("req", "resp", "", "some notes");
+        });
+    }
+
+    @Test
+    public void testClearListOwnerRejectsNullId() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Lists.clearListOwner("req", "resp", null);
+        });
+    }
 }
