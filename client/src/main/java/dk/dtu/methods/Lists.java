@@ -8,7 +8,9 @@ import javafx.scene.control.ListView;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 
@@ -20,11 +22,11 @@ import java.util.prefs.Preferences;
  * /{@code todoListsUri} strings); those transport arguments are now ignored and
  * the work goes through {@link ApiSession#client()}.
  *
- * <p>Note on the API's current shape: only list name and sort are writable. The
- * desktop-superset list fields (owner, priority, year, location, description)
- * are readable in GET /state but have no write endpoint yet, so their setters
- * throw {@link UnsupportedOperationException}. Per-list visible-column choices
- * ({@code taskColumnsJson}) are a view preference and are persisted locally.
+ * <p>The desktop-superset list fields (owner, priority, year, location,
+ * description) are persisted through PATCH /lists/{id}: their setters send a
+ * single-field patch, and a null value clears the field. Per-list
+ * visible-column choices ({@code taskColumnsJson}) are a view preference and
+ * are persisted locally.
  */
 public class Lists {
 
@@ -74,22 +76,24 @@ public class Lists {
 
     public static void setListPriority(String requestsUri, String responsesUri, String listId, int priority) throws Exception {
         requireId(listId);
-        throw unsupported("list priority");
+        patchList(listId, "priority", priority);
     }
 
     public static void setListYear(String requestsUri, String responsesUri, String listId, int year) throws Exception {
         requireId(listId);
-        throw unsupported("list year");
+        patchList(listId, "year", year);
     }
 
     public static void setListLocation(String requestsUri, String responsesUri, String listId, String location) throws Exception {
         requireId(listId);
-        throw unsupported("list location");
+        // A blank/null location clears the field (sent as JSON null).
+        patchList(listId, "location", (location == null || location.isBlank()) ? null : location.trim());
     }
 
     public static void setListDescription(String requestsUri, String responsesUri, String listId, String description) throws Exception {
         requireId(listId);
-        throw unsupported("list description");
+        // A blank/null description clears the field (sent as JSON null).
+        patchList(listId, "description", (description == null || description.isBlank()) ? null : description.trim());
     }
 
     public static void renameTodoList(String requestsUri, String responsesUri, String listId, String newName) throws Exception {
@@ -105,12 +109,12 @@ public class Lists {
         if (owner == null || owner.isBlank()) {
             throw new IllegalArgumentException("Owner cannot be empty");
         }
-        throw unsupported("list owner");
+        patchList(listId, "owner", owner.trim());
     }
 
     public static void clearListOwner(String requestsUri, String responsesUri, String listId) throws Exception {
         requireId(listId);
-        throw unsupported("list owner");
+        patchList(listId, "owner", null); // sent as JSON null to clear the owner
     }
 
     /** Per-list visible-column choice. Stored locally (view preference). */
@@ -123,8 +127,8 @@ public class Lists {
         if (listName == null || listName.isBlank()) {
             throw new IllegalArgumentException("List name cannot be empty");
         }
-        // The API's POST /lists accepts a name only; the owner is not writable yet.
-        ApiSession.get().client().createList(listName.trim());
+        String ownerOrNull = (owner == null || owner.isBlank()) ? null : owner.trim();
+        ApiSession.get().client().createList(listName.trim(), ownerOrNull);
     }
 
     public static void deleteTodoList(String requestsUri, String responsesUri, String listId) throws Exception {
@@ -159,8 +163,13 @@ public class Lists {
         }
     }
 
-    private static UnsupportedOperationException unsupported(String field) {
-        return new UnsupportedOperationException(
-                "Editing " + field + " is not supported by the todo API yet.");
+    /**
+     * PATCHes a single desktop-superset field on a list. A null value clears the
+     * field (serialized as JSON null by the client).
+     */
+    private static void patchList(String listId, String field, Object value) throws Exception {
+        Map<String, Object> patch = new LinkedHashMap<>();
+        patch.put(field, value);
+        ApiSession.get().client().updateList(listId, patch);
     }
 }
