@@ -141,35 +141,12 @@ $javafxJars | ForEach-Object { Write-Host "  - $($_.Name)" -ForegroundColor Gray
 $javafxModulePath = $clientInput
 $combinedModulePath = "$modulePath;$javafxModulePath"
 
-# Core Java modules required for the app
-$javaModules = @(
-  "java.base",
-  "java.desktop",
-  "java.logging",
-  "java.naming",
-  "java.sql",
-  "java.xml",
-  "java.management",
-  "java.instrument",
-  "java.prefs",
-  "java.scripting",
-  "jdk.unsupported",
-  "jdk.jfr",
-  "jdk.crypto.ec",
-  "java.net.http",
-  "jdk.charsets",
-  "java.datatransfer"
-)
-
-# JavaFX modules (these will be resolved from the JavaFX JARs)
-$javafxModules = @(
-  "javafx.controls",
-  "javafx.fxml",
-  "javafx.graphics",
-  "javafx.base"
-)
-
-$allModules = $javaModules + $javafxModules
+# Module list is single-sourced in scripts/installer-modules.txt (shared with
+# the CI workflows and scripts/check-installer-modules.ps1). Edit THAT file
+# when the app starts needing a new JDK module.
+$allModules = (Get-Content (Join-Path $PSScriptRoot "scripts\installer-modules.txt") -Raw).Trim() -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+# Java-only subset for the no-JavaFX jlink fallback below.
+$javaModules = $allModules | Where-Object { $_ -notlike "javafx.*" }
 $modulesStr = ($allModules -join ",")
 
 Write-Host "`nRunning jlink to create custom runtime with JavaFX..." -ForegroundColor Cyan

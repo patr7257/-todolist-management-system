@@ -1,0 +1,36 @@
+name: CI
+
+# PR-level gate: main only receives code that builds, passes the full test
+# reactor, and passes the installer-module guard. Merging to main then triggers
+# the auto-release in build-installers.yml.
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Build and test all modules
+        run: mvn -B clean verify
+
+      - name: Prepare Client jpackage input
+        run: |
+          mkdir -p client-jpackage-input
+          cp client/target/todolist-client-1.0.0.jar client-jpackage-input/
+          cp client/target/libs/*.jar client-jpackage-input/
+
+      # Same guard the release workflow runs, so a missing jlink module fails
+      # the PR instead of the release.
+      - name: Guard against missing installer modules
+        shell: pwsh
+        run: ./scripts/check-installer-modules.ps1

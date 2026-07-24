@@ -1,26 +1,21 @@
 # HANDOVER
 
 ## Date, branch, PR, CI
-- 2026-07-21. Branch: `main` (both TodoList and patrickrobelweb). No open PRs; everything from this session is merged.
-- Latest release: `v2.0.2` (client MSI + DMG published, guard green). API live at `https://api.todolist.patrickrobel.dk`. Web live at `patrickrobel.dk/todo`.
+- 2026-07-24. Branch: `main`. PR #40 (issue #29 dead-code sweep) and PR #42 (issue #41 auto-release CI) squash-merged into `main`; branches deleted local + origin. No open PRs.
+- CI now exists on two levels: `ci.yml` gates every PR (build + tests + module guard), and `build-installers.yml` auto-releases installers on every non-docs merge to `main` (patch bump from the latest release; manual `v*` tags still work for minor/major).
 
 ## TLDR of session outcome
-The whole TodoList product was unified onto ONE source of truth (a Java HTTP API in this repo on the existing Neon Postgres), the web/phone app was redesigned to look like the desktop app, the desktop was moved onto the API, jSpace was retired, and several follow-on fixes shipped as v2.0.1 and v2.0.2. All done and merged:
-- API module (`api/`, `dk.dtu.api`) on Neon, deployed on Dokploy behind Traefik TLS (#23, #24).
-- Website `/todo` is now a thin same-origin proxy to the API; old Neon backend removed (patrickrobelweb #105).
-- Website `/todo` redesigned to the desktop "Soft Warm Minimal" brand + desktop-parity tables, responsive (patrickrobelweb #111).
-- Desktop client repointed off jSpace onto the API with email/password login (#19); parity write-endpoints for desktop-only fields added (#30); jSpace server module retired (#25).
-- v2.0.1: fixed the desktop launch crash (installer runtime was missing `java.net.http` + `jdk.jfr`) and added a jdeps CI guard so a missing module can never silently ship again (#33).
-- v2.0.2: per-user view state (filters, column visibility/order/width, sort, reordering) now auto-persists locally and restores on open (#37); all desktop dialogs got an owner + window-modality (fixes the macOS "app slides away" bug) and are branded + dark-mode aware (#38).
-- Added a committed seed-user tool + `scripts/seed-user.ps1`/`.sh` to create API/Neon accounts (#35); onboarded the second user (Patrick's partner).
-- Rotated the Neon password (it had leaked into a pasted log); updated Dokploy + Vercel.
+Both remaining next steps from the previous handover are DONE:
+- Issue #29 dead-code sweep merged as PR #40 (+186/-1224, 40 files): deleted `TupleSpaces`(+test), the jSpace URI/port/host members of `Config`, the whole `dk.dtu.shared.models` package, the dead `requestsUri`/`responsesUri` param threading (54 call sites through `methods/`+`collumns/`+`scenes/`), the stubbed session export/import feature (`DataManagement` + Sidebar save/load UI), and legacy `ServerPrefs` ip/port keys. Issue #29 closed, board card Done.
+- Installers now bake `-Dtodolist.api.url` (repo variable `TODOLIST_API_URL`, falling back to the production URL) instead of the dead `-Dtodolist.server.ip`/`-Dtodolist.port`; the unused `TODOLIST_SERVER_HOST` repo variable was deleted.
+- CLAUDE.md updated: stale jSpace/module/test lines fixed; new conventions documented (ViewPrefs view-state persistence, `DarkModeManager.prepareDialog` for all dialogs).
+- jSpace VPS decommission EXECUTED (partner confirmed on v2.0.2): `todolist-server-1` container, `todolist-server:latest` image, `todolist_todolist-data` volume, and `/opt/todolist` removed from the VPS. Live API verified up afterwards (HTTP 401 on unauthenticated requests, as expected). Dokploy auto-redeployed the API from the merged `main`.
 
-Board: TodoList dev board = GitHub Project #7. Open/future issue: #29 (deep dead-code sweep).
+The TodoList product is now fully post-jSpace with zero dead transport code.
 
 ## Prioritized next steps
-1. Make sure BOTH desktop clients are on v2.0.x (Patrick on v2.0.2; partner should take the v2.0.2 update banner). Only then decommission the live jSpace Dokploy service + `/opt/todolist` compose on the VPS. Old pre-2.0.0 clients still speak jSpace and break the moment it is off.
-2. Do TodoList #29: remove the now-dead jSpace remnants (`shared` `TupleSpaces`, `Config` jSpace URI methods, the now-ignored `requestsUri`/`responsesUri` params threaded through client `methods/`+`collumns/`+`scenes/`). Keep the build green.
-3. Optional: consider adding a short ViewPrefs / prepareDialog note to CLAUDE.md "Notable conventions" (new this session); and baking `TODOLIST_API_URL` into the installer instead of the now-irrelevant `TODOLIST_SERVER_HOST`.
+1. Smoke-test the auto-released MSI from the PR #42 merge (expected v2.0.3): take the in-app update banner, then launch, sign in, change a task status, confirm no save/load session buttons in the sidebar. Partner's client should offer the same update.
+2. Nothing else is pending; new work starts fresh from the board.
 
 ## Verbatim resume commands (PowerShell)
 Run the API locally (embedded Postgres if no DATABASE_URL is set):
@@ -35,25 +30,19 @@ Seed a new login account into Neon (prompts for the Neon unpooled URL, then emai
 ```
 cd "C:\Users\pr\repos\1-Personal\TodoList"; .\scripts\seed-user.ps1
 ```
-Run the website locally:
-```
-cd "C:\Users\pr\repos\1-Personal\patrickrobelweb\website"; pnpm install; pnpm dev
-```
 
 ## Gotchas discovered this session
-- Installer runtime modules: the client is packaged with a slimmed jlink runtime; any JDK module the app references must be in the `--add-modules` list in `.github/workflows/build-installers.yml` (both jobs) AND `build-installers.ps1`, or the app crashes silently at launch. A jdeps guard step now fails CI if the list is incomplete (it caught `jdk.jfr`). Currently required: java.net.http, jdk.jfr, jdk.charsets, java.datatransfer, plus the earlier set.
-- Neon URL has inline `user:password@host`; the Java API parses credentials out (`DataSources.parse`) rather than prefixing `jdbc:`. Use the UNPOOLED Neon string for the API (HikariCP over Neon's pgBouncer breaks prepared statements).
-- `TODO_SESSION_SECRET` must match on Dokploy (API) and Vercel (website) or tokens do not interoperate. The Dokploy `DATABASE_URL` is set BY HAND; Neon password rotations must be copied there manually (Vercel auto-syncs via the Neon integration; Dokploy does not).
-- Dokploy autodeploys the API from `main`, so any merge to TodoList `main` rebuilds the API.
-- The desktop auto-updater checks GitHub Releases on launch and shows an "Update available" banner (8s timeout, correct repo). v1.3.x builds had a broken updater (old repo name); v2.0.1+ work.
-- View state persists via `dk.dtu.ViewPrefs` (Java Preferences, per signed-in user, this machine only). Dialogs must be prepared via `DarkModeManager.prepareDialog(dialog, owner)` to get owner + WINDOW_MODAL + brand/dark styling.
-- Boards: TodoList = Project #7; patrickrobelweb = #2.
+- Every non-docs merge to `main` now SHIPS a release automatically (patch bump). Docs-only merges (`*.md`, `docs/`, `.claude/`) skip it. The jlink/jpackage module list is single-sourced in `scripts/installer-modules.txt`; the guard (`scripts/check-installer-modules.ps1`) runs in PR CI and before each release build.
+- `client/pom.xml` had no direct gson dependency; the client used Gson transitively via `shared`. When `shared` dropped gson (models package deleted), gson had to be added directly to `client/pom.xml`. Watch for other transitive-only dependencies when trimming `shared`.
+- The old export/import UI lived entirely in `Sidebar.java`, not `SettingsDialog.java` (earlier notes pointed at the wrong file).
+- The TodoList dev board (Project #7) has only Todo / In Progress / Done, no "In review" column.
+- The client baked default API URL comes from `Config.DEFAULT_API_BASE_URL`; the `TODOLIST_API_URL` repo variable is optional (only needed to point release builds elsewhere).
+- Dokploy autodeploys the API from `main`: every merge rebuilds and restarts the live API container (new container suffix each time; brief restart blip).
 
 ## Open decisions waiting on Patrick
-- Decommission the live jSpace service now (partner confirmed on v2.0.2?) or wait a bit longer.
-- Schedule the #29 dead-code cleanup, or leave parked.
+- None. (The "tag v2.0.3?" question resolved itself: the auto-release on the PR #42 merge ships it.)
 
 ## Environment state
-- No dev servers or Docker started by this session; Docker Desktop is not running. The desktop client you launched is your own process.
-- Both repos on `main` only; all session worktrees removed and all session branches deleted (local + origin).
-- This `HANDOVER.md` is written but NOT committed (current branch is protected `main`). `.claude/.codev-ack` has this session's line (expected, gitignored intent). The live API, redesigned website, and v2.0.2 release are all deployed.
+- Nothing left running locally: no dev servers, no Docker; the embedded test Postgres shut itself down after `mvn install`.
+- VPS: jSpace stack fully gone; remaining tenants are the live TodoList API (Dokploy, behind Traefik TLS), Catan, and Dokploy infra.
+- Repo on `main` only; all session branches deleted local + origin. This `HANDOVER.md` is written but NOT committed (protected `main`); `.claude/.codev-ack` is locally modified (expected, session decision lines).

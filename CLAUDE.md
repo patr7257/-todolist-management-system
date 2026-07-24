@@ -108,18 +108,29 @@ Run all tests from the repo root with `mvn test`.
 
 `build-installers.ps1` (Windows) and the macOS steps in `README.md` use
 `jpackage` to build a native CLIENT installer (MSI on Windows, DMG on macOS)
-that bundles a JRE, so end users do not need Java installed.
-`.github/workflows/build-installers.yml` builds the Windows and macOS client
-installers automatically on every push of a `v*` tag (and on manual
-`workflow_dispatch`), and attaches them to a GitHub Release. Only the client is
+that bundles a JRE, so end users do not need Java installed. Only the client is
 packaged: the API is a hosted service, not an installer.
 
+CI (two workflows):
+- `.github/workflows/ci.yml` runs on every pull request: full reactor build +
+  tests plus the installer-module guard. Main only receives verified merges.
+- `.github/workflows/build-installers.yml` RELEASES. Auto: every push to `main`
+  (i.e. every merged PR) bumps the PATCH of the latest GitHub release, builds
+  both installers with that version baked in, and publishes a GitHub Release;
+  the in-app updater then offers it to users. Docs-only merges (`*.md`,
+  `docs/`, `.claude/`) skip the release. Manual: pushing a `v*` tag releases
+  exactly that version (use for minor/major bumps; the next auto release bumps
+  from it). Runs are queued via a concurrency group so two merges cannot
+  compute the same next version.
+
 - The jlinked runtime must include every JDK module the app touches, not just
-  the JavaFX ones. The CI `--add-modules` list therefore names `java.logging`
-  (Ikonli and JNA use `java.util.logging`), `java.naming`, `java.sql`,
-  `java.management`, `jdk.crypto.ec`, `java.instrument`, etc., plus the JavaFX
-  modules. Adding a client dependency that needs a new JDK module means adding
-  that module here too: a missing one makes the packaged app crash silently at
+  the JavaFX ones (`java.logging` for Ikonli/JNA, `java.naming`, `java.sql`,
+  `java.net.http`, `jdk.jfr`, etc.). The list is SINGLE-SOURCED in
+  `scripts/installer-modules.txt`, read by both workflow jobs, by
+  `build-installers.ps1`, and by the guard
+  (`scripts/check-installer-modules.ps1`, jdeps-based, runs in PR CI and before
+  every release build). Adding a client dependency that needs a new JDK module
+  means adding it THERE: a missing one makes the packaged app crash silently at
   startup (`NoClassDefFoundError`) even though `mvn javafx:run` works fine.
 - The client jpackage step also passes
   `--add-opens javafx.controls/javafx.scene.control.skin=ALL-UNNAMED` so the
@@ -127,10 +138,11 @@ packaged: the API is a hosted service, not an installer.
   build (the same option is in `client/pom.xml` for `mvn javafx:run`).
 
 Release conventions (do not break these):
-- The version comes from the git tag: a `Compute version` step strips the
-  leading `v` and feeds it to `--app-version` AND `--java-options
-  -Dtodolist.version=...` (macOS rejects a leading-zero major, so the non-tag
-  fallback is `1.0.0`).
+- The version comes from the `version` job in `build-installers.yml`: a `v*`
+  tag ref is used verbatim (stripped of the `v`), otherwise the latest GitHub
+  release's patch is bumped. It feeds `--app-version` AND `--java-options
+  -Dtodolist.version=...` (macOS rejects a leading-zero major, so the fallback
+  with no releases and no tags is `1.0.0`).
 - Each release also gets STABLE, versionless asset copies
   (`TodoList-Client-Windows.msi`, `TodoList-Client-macOS.dmg`) so
   `releases/latest/download/<name>` is a permanent URL the website and the
