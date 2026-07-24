@@ -3,7 +3,6 @@ package dk.dtu.collumns;
 import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Lists;
 import dk.dtu.methods.Tasks;
-import dk.dtu.shared.Config;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -108,7 +107,7 @@ public final class Location {
             field.setDisable(true);
             new Thread(() -> {
                 try {
-                    Lists.setListLocation(Config.getRequestsUri(), Config.getResponsesUri(), item.id, desired);
+                    Lists.setListLocation(item.id, desired);
                     Platform.runLater(() -> {
                         field.setDisable(false);
                         // Refresh removed to prevent row shuffling during editing
@@ -206,7 +205,7 @@ public final class Location {
             field.setDisable(true);
             new Thread(() -> {
                 try {
-                    Tasks.setTaskLocation(Config.getRequestsUri(), Config.getResponsesUri(), item.listId, item.id, desired);
+                    Tasks.setTaskLocation(item.listId, item.id, desired);
                     Platform.runLater(() -> {
                         field.setDisable(false);
                         // Refresh removed to prevent row shuffling during editing

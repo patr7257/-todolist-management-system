@@ -13,10 +13,9 @@ import java.util.List;
 
 // Helper data structures and HTTP <-> UI mapping utilities.
 //
-// This used to build/await jSpace tuples. The client now talks to the shared
-// HTTP API (see dk.dtu.net), so the request plumbing is gone and Helpers just
-// carries the UI row types (ListEntry, TaskEntry) plus the mapping from the API
-// DTOs and the date conversions the UI expects.
+// The client talks to the shared HTTP API (see dk.dtu.net); Helpers carries the
+// UI row types (ListEntry, TaskEntry) plus the mapping from the API DTOs and
+// the date conversions the UI expects.
 public class Helpers {
 
     private Helpers() {

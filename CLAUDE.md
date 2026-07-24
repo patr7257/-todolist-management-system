@@ -21,18 +21,13 @@ onto the HTTP API described here. The jSpace server module has been retired
 - `pom.xml`: parent POM, packaging `pom`, Java 21 (`maven.compiler.release`),
   declares the three modules below plus shared versions for JUnit 5.11.4 and
   JavaFX 21.0.5.
-- `shared/` (`todolist-shared`): shared constants, config, and JSON models used
-  by both client and api.
+- `shared/` (`todolist-shared`): shared constants and config used by both
+  client and api.
   - `dk.dtu.shared.Config`: runtime configuration read from system properties
-    with environment variable fallback.
+    with environment variable fallback (API base URL, connection-error
+    handling).
   - `dk.dtu.shared.TaskStatus`: task status enum with a completion percentage
     per status.
-  - `dk.dtu.shared.models`: `SessionData`, `TaskData`, `TodoListData`,
-    `UserData` (Gson-serializable JSON models).
-  - NOTE: `shared` still carries some now-unused legacy jSpace constants
-    (`dk.dtu.shared.TupleSpaces` and the jSpace URI methods on `Config`). They
-    compile fine as dead String constants and are scheduled for removal in
-    issue #29; do not build new features on them.
 - `api/` (`todolist-api`): headless HTTP API. Main class `dk.dtu.api.ApiMain`.
   Built with Javalin (HTTP), JDBI + HikariCP over Postgres, and Gson for JSON.
   Packages to a self-contained shaded fat jar (`todolist-api.jar`).
@@ -51,23 +46,19 @@ onto the HTTP API described here. The jSpace server module has been retired
     `ApiModels`, `ApiException`.
   - `dk.dtu.scenes`: `A_WelcomeScreen`, `B_LoginScreen`, `C_MainMenu`,
     `D_TodoListView` (letter-prefixed to show screen flow order).
-  - `dk.dtu.methods`: `DataManagement`, `Lists`, `Tasks`, `Users`, `Helpers`,
-    the client-side operations that call the API via `ApiSession` /
-    `TodoApiClient`. (Some of these still carry now-ignored `requestsUri` /
-    `responsesUri` parameters left over from the jSpace era; removing that dead
-    threading is tracked in issue #29.)
+  - `dk.dtu.methods`: `Lists`, `Tasks`, `Users`, `Helpers`, the client-side
+    operations that call the API via `ApiSession` / `TodoApiClient`.
   - `dk.dtu.collumns`: JavaFX `TableView` column/cell classes for the lists and
     tasks tables (note the module name keeps this spelling).
   - `dk.dtu.update`: on-launch and Settings-tab auto-update.
   - `ClientConnectDialog`, `SettingsDialog`, `MainUserConfig`,
     `DarkModeManager`: connection setup, settings, and dark mode support.
 
-Both `api` and `client` depend on `todolist-shared`. Nothing depends on jSpace
-anymore.
+Both `api` and `client` depend on `todolist-shared`.
 
 ## Build and run
 
-Prerequisites: JDK 21 and Maven. No jSpace install is needed anymore.
+Prerequisites: JDK 21 and Maven.
 
 Build everything from the repo root:
 
@@ -105,10 +96,11 @@ registry key `HKCU:\Software\JavaSoft\Prefs\dk\dtu`).
 
 JUnit 5 (Jupiter 5.11.4) tests live under each module's `src/test/java`:
 
-- `shared`: `TaskStatusTest`, `TupleSpacesTest`.
-- `api`: HTTP/service tests for the api module.
-- `client`: `HelpersTest`, `ListsTest`, `NotificationListenerTest`, `TasksTest`,
-  and `net/StatePollerTest`.
+- `shared`: `TaskStatusTest`.
+- `api`: HTTP/service tests for the api module (`TodoApiIntegrationTest`,
+  `ScryptTest`, `TokenTest`, `CompletionTest`, `DataSourcesTest`).
+- `client`: `HelpersTest`, `ListsTest`, `TasksTest`, `ViewPrefsTest`,
+  `net/StatePollerTest`, and `net/TodoApiClientTest`.
 
 Run all tests from the repo root with `mvn test`.
 
@@ -188,5 +180,13 @@ source) to the latest tag, downloads the platform installer, and runs it
   built by the `dk.dtu.ui.Tables` adapter from the `dk.dtu.collumns.*` `Column`
   classes; `dk.dtu.ui.WindowChrome` darkens the native Windows title bar via the
   Win32 DWM API (JNA).
+- Per-user view state (filters, column visibility/order/width, sort, manual
+  reordering) auto-persists via `dk.dtu.ViewPrefs` (Java Preferences, keyed by
+  the signed-in user, local to this machine) and restores on open. New
+  view-affecting UI state should go through `ViewPrefs`, not ad-hoc storage.
+- Every dialog must be prepared via `DarkModeManager.prepareDialog(dialog,
+  owner)`: it sets the owner window + `WINDOW_MODAL` (fixes the macOS "app
+  slides away" bug) and attaches brand + dark-mode styling. Never show a bare
+  `Dialog`/`Alert` without it.
 - The API persists state to Postgres via JDBI; schema is applied by
   `dk.dtu.api.db.Migrations`.

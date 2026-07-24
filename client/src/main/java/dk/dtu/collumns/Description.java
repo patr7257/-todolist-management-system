@@ -3,7 +3,6 @@ package dk.dtu.collumns;
 import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Lists;
 import dk.dtu.methods.Tasks;
-import dk.dtu.shared.Config;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -131,7 +130,7 @@ public final class Description {
 
             new Thread(() -> {
                 try {
-                    Lists.setListDescription(Config.getRequestsUri(), Config.getResponsesUri(), item.id, desired);
+                    Lists.setListDescription(item.id, desired);
                     Platform.runLater(() -> {
                         // Refresh removed to prevent row shuffling during editing
                         // if (ctx.refresh() != null) {
@@ -242,7 +241,7 @@ public final class Description {
 
             new Thread(() -> {
                 try {
-                    Tasks.setTaskDescription(Config.getRequestsUri(), Config.getResponsesUri(), item.listId, item.id, desired);
+                    Tasks.setTaskDescription(item.listId, item.id, desired);
                     Platform.runLater(() -> {
                         // Refresh removed to prevent row shuffling during editing
                         // if (ctx.refresh() != null) {

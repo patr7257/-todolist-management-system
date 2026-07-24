@@ -3,7 +3,6 @@ package dk.dtu.collumns;
 import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Lists;
 import dk.dtu.methods.Tasks;
-import dk.dtu.shared.Config;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -128,7 +127,7 @@ public final class Year {
             final int next = desired;
             new Thread(() -> {
                 try {
-                    Lists.setListYear(Config.getRequestsUri(), Config.getResponsesUri(), item.id, next);
+                    Lists.setListYear(item.id, next);
                     Platform.runLater(() -> {
                         field.setDisable(false);
                         // Refresh removed to prevent row shuffling during editing
@@ -246,7 +245,7 @@ public final class Year {
             final int next = desired;
             new Thread(() -> {
                 try {
-                    Tasks.setTaskYear(Config.getRequestsUri(), Config.getResponsesUri(), item.listId, item.id, next);
+                    Tasks.setTaskYear(item.listId, item.id, next);
                     Platform.runLater(() -> {
                         field.setDisable(false);
                         // Refresh removed to prevent row shuffling during editing

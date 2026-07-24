@@ -2,7 +2,6 @@ package dk.dtu.collumns;
 
 import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Tasks;
-import dk.dtu.shared.Config;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -64,13 +63,7 @@ public class TaskDueDateColumn implements Column<Helpers.TaskEntry> {
             duePicker.setDisable(true);
             new Thread(() -> {
                 try {
-                    Tasks.changeTaskDueDate(
-                            Config.getRequestsUri(),
-                            Config.getResponsesUri(),
-                            item.listId,
-                            item.id,
-                            newDueDate
-                    );
+                    Tasks.changeTaskDueDate(item.listId, item.id, newDueDate);
                     Platform.runLater(() -> {
                         duePicker.setDisable(false);
                         // Refresh removed to prevent row shuffling during editing

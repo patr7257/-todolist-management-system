@@ -13,42 +13,42 @@ public class TasksTest {
     @Test
     public void testAddTaskRejectsNullTitle() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Tasks.addTask("req", "resp", "list1", null, "2026-01-01", "alice");
+            Tasks.addTask("list1", null, "2026-01-01", "alice");
         });
     }
 
     @Test
     public void testAddTaskRejectsBlankTitle() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Tasks.addTask("req", "resp", "list1", "   ", "2026-01-01", "alice");
+            Tasks.addTask("list1", "   ", "2026-01-01", "alice");
         });
     }
 
     @Test
     public void testAssignTaskRejectsNullOwner() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Tasks.assignTask("req", "resp", "list1", "task1", null);
+            Tasks.assignTask("list1", "task1", null);
         });
     }
 
     @Test
     public void testAssignTaskRejectsBlankOwner() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Tasks.assignTask("req", "resp", "list1", "task1", "   ");
+            Tasks.assignTask("list1", "task1", "   ");
         });
     }
 
     @Test
     public void testDeleteTaskRejectsNullTaskId() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Tasks.deleteTask("req", "resp", null);
+            Tasks.deleteTask(null);
         });
     }
 
     @Test
     public void testDeleteTaskRejectsBlankTaskId() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Tasks.deleteTask("req", "resp", "   ");
+            Tasks.deleteTask("   ");
         });
     }
 
@@ -57,15 +57,14 @@ public class TasksTest {
     @Test
     public void testSetTaskYearRejectsBlankListId() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Tasks.setTaskYear("req", "resp", "   ", "task1", 2027);
+            Tasks.setTaskYear("   ", "task1", 2027);
         });
     }
 
     @Test
     public void testSetTaskYearRejectsNullTaskId() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Tasks.setTaskYear("req", "resp", "list1", null, 2027);
+            Tasks.setTaskYear("list1", null, 2027);
         });
     }
 }
-

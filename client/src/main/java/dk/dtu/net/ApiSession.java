@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Process-wide session state for the HTTP client: the {@link TodoApiClient},
  * the bearer token, the signed-in user, and the closed set of users used to
- * resolve assignee names to ids. Replaces the old jSpace connection pool.
+ * resolve assignee names to ids.
  *
  * <p>The token, the user's email and the API base URL are persisted (via
  * {@link dk.dtu.ServerPrefs}-style preferences, injected here to avoid a

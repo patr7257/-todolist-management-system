@@ -3,10 +3,9 @@ package dk.dtu.net;
 import java.util.function.BooleanSupplier;
 
 /**
- * Lightweight replacement for the old jSpace notification listener. The HTTP
- * API has no server push yet, so this polls on a fixed interval and asks the UI
- * to refresh the current view, mirroring the old "data changed -> refetch"
- * behavior.
+ * Lightweight polling loop for the HTTP API. The API has no server push yet,
+ * so this polls on a fixed interval and asks the UI to refresh the current
+ * view, mirroring a "data changed, refetch" behavior.
  *
  * <p>It runs on its own daemon thread and never touches JavaFX state itself:
  * the supplied {@code onTick} callback is responsible for marshalling onto the

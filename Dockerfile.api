@@ -3,7 +3,7 @@
 
 # ---------------------------------------------------------------------------
 # Build stage: build the api module + its dependency (shared), producing the
-# shaded fat jar. No jSpace needed: shared no longer depends on it.
+# shaded fat jar.
 # ---------------------------------------------------------------------------
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /build

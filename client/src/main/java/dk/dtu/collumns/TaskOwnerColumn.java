@@ -3,7 +3,6 @@ package dk.dtu.collumns;
 import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Tasks;
 import dk.dtu.methods.Users;
-import dk.dtu.shared.Config;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -74,7 +73,7 @@ public class TaskOwnerColumn implements Column<Helpers.TaskEntry> {
         ownerCombo.getButtonCell().setMaxHeight(CELL_HEIGHT);
         ownerCombo.getButtonCell().setStyle("-fx-padding: 0 8 0 8;");
 
-        Users.loadUsersIntoComboBox(ownerCombo, Config.getUsersUri(), true);
+        Users.loadUsersIntoComboBox(ownerCombo, true);
 
         ownerCombo.setOnAction(evt -> {
             Helpers.TaskEntry item = ctx.currentItem().get();
@@ -96,20 +95,9 @@ public class TaskOwnerColumn implements Column<Helpers.TaskEntry> {
             new Thread(() -> {
                 try {
                     if (wantsAll) {
-                        Tasks.unassignTask(
-                                Config.getRequestsUri(),
-                                Config.getResponsesUri(),
-                                item.listId,
-                                item.id
-                        );
+                        Tasks.unassignTask(item.listId, item.id);
                     } else {
-                        Tasks.assignTask(
-                                Config.getRequestsUri(),
-                                Config.getResponsesUri(),
-                                item.listId,
-                                item.id,
-                                cleanOwner
-                        );
+                        Tasks.assignTask(item.listId, item.id, cleanOwner);
                     }
                     Platform.runLater(() -> {
                         ownerCombo.setDisable(false);

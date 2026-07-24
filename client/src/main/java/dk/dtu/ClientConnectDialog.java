@@ -17,9 +17,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- * Dialog for choosing the todo API server the client connects to. Replaces the
- * old jSpace IP/port + network-scan dialog: the client now speaks HTTP, so all
- * that is needed is the API base URL (origin), for example
+ * Dialog for choosing the todo API server the client connects to. The client
+ * speaks HTTP, so all that is needed is the API base URL (origin), for example
  * {@code https://api.todolist.patrickrobel.dk}. Includes a best-effort "Test"
  * that pings the API without needing valid credentials.
  */
