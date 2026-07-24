@@ -2,7 +2,6 @@ package dk.dtu.collumns;
 
 import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Lists;
-import dk.dtu.shared.Config;
 import dk.dtu.ui.Icons;
 import javafx.application.Platform;
 import javafx.scene.Node;
@@ -63,7 +62,7 @@ public class ListDeleteColumn implements Column<Helpers.ListEntry> {
                 deleteButton.setDisable(true);
                 new Thread(() -> {
                     try {
-                        Lists.deleteTodoList(Config.getRequestsUri(), Config.getResponsesUri(), item.id);
+                        Lists.deleteTodoList(item.id);
                         Platform.runLater(() -> {
                             deleteButton.setDisable(false);
                             if (ctx.refresh() != null) {

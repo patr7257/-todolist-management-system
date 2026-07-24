@@ -7,7 +7,6 @@ import dk.dtu.collumns.*;
 import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Lists;
 import dk.dtu.methods.Users;
-import dk.dtu.shared.Config;
 import dk.dtu.ui.Icons;
 import dk.dtu.ui.Tables;
 import javafx.animation.PauseTransition;
@@ -156,7 +155,7 @@ public class C_MainMenu {
 
             new Thread(() -> {
                 try {
-                    Lists.renameTodoList(Config.getRequestsUri(), Config.getResponsesUri(), item.id, trimmed);
+                    Lists.renameTodoList(item.id, trimmed);
                     Platform.runLater(this::reloadLists);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -192,7 +191,7 @@ public class C_MainMenu {
         List<String> orderedIds = ordered.stream().map(e -> e.id).toList();
         new Thread(() -> {
             try {
-                Lists.setListOrderBulk(Config.getRequestsUri(), Config.getResponsesUri(), orderedIds);
+                Lists.setListOrderBulk(orderedIds);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -215,12 +214,7 @@ public class C_MainMenu {
 
             new Thread(() -> {
                 try {
-                    Lists.createTodoList(
-                            Config.getRequestsUri(),
-                            Config.getResponsesUri(),
-                            name,
-                            navigator.getCurrentUser()
-                    );
+                    Lists.createTodoList(name, navigator.getCurrentUser());
                     Platform.runLater(this::reloadLists);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -244,7 +238,7 @@ public class C_MainMenu {
         Helpers.ListEntry selected = (table != null) ? table.getSelectionModel().getSelectedItem() : null;
         final String previouslySelectedId = (selected != null) ? selected.id : null;
 
-        Lists.loadTodoLists(Config.getTodoListsUri(), entries -> {
+        Lists.loadTodoLists(entries -> {
             allLists = (entries != null) ? entries : List.of();
             applyListFilters();
 
@@ -321,7 +315,7 @@ public class C_MainMenu {
 
         ComboBox<String> ownerCombo = new ComboBox<>();
         ownerCombo.setPrefWidth(240);
-        Users.loadUsersIntoComboBox(ownerCombo, Config.getUsersUri(), true);
+        Users.loadUsersIntoComboBox(ownerCombo, true);
         ownerCombo.setValue(ownerFilter != null ? ownerFilter : "All");
 
         TextField yearField = new TextField(yearFilter != null ? Integer.toString(yearFilter) : "");

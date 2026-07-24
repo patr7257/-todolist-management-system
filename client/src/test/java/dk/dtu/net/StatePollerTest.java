@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Behavior of the polling loop that replaced the jSpace notification listener.
+ * Behavior of the HTTP state-polling loop.
  */
 public class StatePollerTest {
 

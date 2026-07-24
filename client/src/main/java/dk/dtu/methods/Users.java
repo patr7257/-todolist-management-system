@@ -23,7 +23,7 @@ public class Users {
     private static volatile List<String> userCache;
 
     /** Returns the user-name list, fetching state and caching it on first use. */
-    public static List<String> getUsersCached(String usersUri) throws Exception {
+    public static List<String> getUsersCached() throws Exception {
         List<String> cached = userCache;
         if (cached != null) {
             return cached;
@@ -45,18 +45,13 @@ public class Users {
         userCache = null;
     }
 
-    // Load all users into a ComboBox
-    public static void loadUsersIntoComboBox(ComboBox<String> usersComboBox, String usersUri) {
-        loadUsersIntoComboBox(usersComboBox, usersUri, false);
-    }
-
     // Load all users into a ComboBox, optionally including an "All" option.
-    public static void loadUsersIntoComboBox(ComboBox<String> usersComboBox, String usersUri, boolean includeAllOption) {
+    public static void loadUsersIntoComboBox(ComboBox<String> usersComboBox, boolean includeAllOption) {
         new Thread(() -> {
             try {
                 // Cached: the whole user list is fetched once per refresh, not once
                 // per dropdown/row.
-                final List<String> tuples = getUsersCached(usersUri);
+                final List<String> users = getUsersCached();
 
                 Platform.runLater(() -> {
                     String previousValue = usersComboBox.getValue();
@@ -66,7 +61,7 @@ public class Users {
                         usersComboBox.getItems().add("All");
                     }
 
-                    for (String username : tuples) {
+                    for (String username : users) {
                         // Add star to main users for easy identification
                         if (MainUserConfig.isMainUser(username)) {
                             usersComboBox.getItems().add(username + " *");
@@ -111,7 +106,7 @@ public class Users {
      * Creating users from the desktop app is not supported: the API owns the
      * user set. Reports the situation via the error callback.
      */
-    public static void createNewUser(String username, String usersUri,
+    public static void createNewUser(String username,
                                      Consumer<String> onSuccessMessage, Consumer<String> onError) {
         if (username == null || username.isBlank()) {
             throw new IllegalArgumentException("Username cannot be empty");
@@ -123,7 +118,7 @@ public class Users {
     }
 
     /** Deleting users from the desktop app is not supported (API owns users). */
-    public static void deleteUser(String requestsUri, String responsesUri, String username) throws Exception {
+    public static void deleteUser(String username) throws Exception {
         if (username == null || username.isBlank()) {
             throw new IllegalArgumentException("Username cannot be empty");
         }

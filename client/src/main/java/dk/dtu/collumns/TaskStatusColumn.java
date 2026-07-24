@@ -2,7 +2,6 @@ package dk.dtu.collumns;
 
 import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Tasks;
-import dk.dtu.shared.Config;
 import dk.dtu.shared.TaskStatus;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
@@ -66,13 +65,7 @@ public class TaskStatusColumn implements Column<Helpers.TaskEntry> {
             statusCombo.setDisable(true);
             new Thread(() -> {
                 try {
-                    Tasks.changeTaskStatus(
-                            Config.getRequestsUri(),
-                            Config.getResponsesUri(),
-                            item.listId,
-                            item.id,
-                            newStatus.name()
-                    );
+                    Tasks.changeTaskStatus(item.listId, item.id, newStatus.name());
                     Platform.runLater(() -> {
                         statusCombo.setDisable(false);
                         // Refresh removed to prevent row shuffling during editing

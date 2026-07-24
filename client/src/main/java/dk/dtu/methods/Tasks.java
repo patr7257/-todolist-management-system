@@ -14,9 +14,8 @@ import java.util.function.Consumer;
 /**
  * Service for task (item) operations, backed by the shared HTTP API.
  *
- * <p>Public signatures are preserved from the jSpace version (callers still
- * pass transport URI strings, now ignored). Owner/assignee is name-based in the
- * UI but id-based in the API: writes resolve the display name to an assignee id
+ * <p>Owner/assignee is name-based in the UI but id-based in the API: writes
+ * resolve the display name to an assignee id
  * via {@link ApiSession#idForName(String)}, reads show {@code assigneeName}.
  *
  * <p>The desktop-superset {@code year} on items is persisted through PATCH
@@ -26,11 +25,7 @@ public class Tasks {
 
     private Tasks() {}
 
-    public static void loadTasksForList(ListView<Helpers.TaskEntry> tasksView, String tasksUri, String listId) {
-        loadTasksForList(tasksUri, listId, entries -> tasksView.getItems().setAll(entries));
-    }
-
-    public static void loadTasksForList(String tasksUri, String listId, Consumer<List<Helpers.TaskEntry>> onLoaded) {
+    public static void loadTasksForList(String listId, Consumer<List<Helpers.TaskEntry>> onLoaded) {
         new Thread(() -> {
             try {
                 StateResponse state = ApiSession.get().fetchState();
@@ -56,8 +51,7 @@ public class Tasks {
         }, "load-tasks-for-list").start();
     }
 
-    public static void addTask(String requestsUri, String responsesUri, String listId,
-                               String taskTitle, String dueDate, String taskOwner) throws Exception {
+    public static void addTask(String listId, String taskTitle, String dueDate, String taskOwner) throws Exception {
         if (taskTitle == null || taskTitle.isBlank()) {
             throw new IllegalArgumentException("Task title cannot be empty");
         }
@@ -68,24 +62,21 @@ public class Tasks {
                 listId, taskTitle.trim(), null, null, assigneeId, null, dueAt, null);
     }
 
-    public static void changeTaskStatus(String requestsUri, String responsesUri, String listId,
-                                         String taskId, String newStatus) throws Exception {
+    public static void changeTaskStatus(String listId, String taskId, String newStatus) throws Exception {
         requireTaskId(taskId);
         Map<String, Object> patch = new LinkedHashMap<>();
         patch.put("status", newStatus);
         ApiSession.get().client().updateItem(taskId, patch);
     }
 
-    public static void changeTaskDueDate(String requestsUri, String responsesUri, String listId,
-                                         String taskId, String newDueDate) throws Exception {
+    public static void changeTaskDueDate(String listId, String taskId, String newDueDate) throws Exception {
         requireTaskId(taskId);
         Map<String, Object> patch = new LinkedHashMap<>();
         patch.put("dueAt", Helpers.dateToIsoInstant(newDueDate)); // null clears the due date
         ApiSession.get().client().updateItem(taskId, patch);
     }
 
-    public static void assignTask(String requestsUri, String responsesUri, String listId,
-                                  String taskId, String owner) throws Exception {
+    public static void assignTask(String listId, String taskId, String owner) throws Exception {
         requireTaskId(taskId);
         if (owner == null || owner.isBlank()) {
             throw new IllegalArgumentException("Owner cannot be empty");
@@ -99,7 +90,7 @@ public class Tasks {
         ApiSession.get().client().updateItem(taskId, patch);
     }
 
-    public static void unassignTask(String requestsUri, String responsesUri, String listId, String taskId) throws Exception {
+    public static void unassignTask(String listId, String taskId) throws Exception {
         requireListId(listId);
         requireTaskId(taskId);
         Map<String, Object> patch = new LinkedHashMap<>();
@@ -107,13 +98,12 @@ public class Tasks {
         ApiSession.get().client().updateItem(taskId, patch);
     }
 
-    public static void deleteTask(String requestsUri, String responsesUri, String taskId) throws Exception {
+    public static void deleteTask(String taskId) throws Exception {
         requireTaskId(taskId);
         ApiSession.get().client().deleteItem(taskId);
     }
 
-    public static void renameTask(String requestsUri, String responsesUri, String listId,
-                                  String taskId, String newTitle) throws Exception {
+    public static void renameTask(String listId, String taskId, String newTitle) throws Exception {
         requireListId(listId);
         requireTaskId(taskId);
         if (newTitle == null || newTitle.isBlank()) {
@@ -124,8 +114,7 @@ public class Tasks {
         ApiSession.get().client().updateItem(taskId, patch);
     }
 
-    public static void setTaskPriority(String requestsUri, String responsesUri, String listId,
-                                       String taskId, int priority) throws Exception {
+    public static void setTaskPriority(String listId, String taskId, int priority) throws Exception {
         requireListId(listId);
         requireTaskId(taskId);
         Map<String, Object> patch = new LinkedHashMap<>();
@@ -133,8 +122,7 @@ public class Tasks {
         ApiSession.get().client().updateItem(taskId, patch);
     }
 
-    public static void setTaskYear(String requestsUri, String responsesUri, String listId,
-                                   String taskId, int year) throws Exception {
+    public static void setTaskYear(String listId, String taskId, int year) throws Exception {
         requireListId(listId);
         requireTaskId(taskId);
         Map<String, Object> patch = new LinkedHashMap<>();
@@ -142,8 +130,7 @@ public class Tasks {
         ApiSession.get().client().updateItem(taskId, patch);
     }
 
-    public static void setTaskLocation(String requestsUri, String responsesUri, String listId,
-                                       String taskId, String location) throws Exception {
+    public static void setTaskLocation(String listId, String taskId, String location) throws Exception {
         requireListId(listId);
         requireTaskId(taskId);
         Map<String, Object> patch = new LinkedHashMap<>();
@@ -151,8 +138,7 @@ public class Tasks {
         ApiSession.get().client().updateItem(taskId, patch);
     }
 
-    public static void setTaskDescription(String requestsUri, String responsesUri, String listId,
-                                          String taskId, String description) throws Exception {
+    public static void setTaskDescription(String listId, String taskId, String description) throws Exception {
         requireListId(listId);
         requireTaskId(taskId);
         Map<String, Object> patch = new LinkedHashMap<>();
@@ -160,8 +146,7 @@ public class Tasks {
         ApiSession.get().client().updateItem(taskId, patch);
     }
 
-    public static void setTaskOrderBulk(String requestsUri, String responsesUri, String listId,
-                                        List<String> orderedTaskIds) throws Exception {
+    public static void setTaskOrderBulk(String listId, List<String> orderedTaskIds) throws Exception {
         requireListId(listId);
         if (orderedTaskIds == null || orderedTaskIds.isEmpty()) {
             throw new IllegalArgumentException("Task order cannot be empty");

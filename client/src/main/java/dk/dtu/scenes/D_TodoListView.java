@@ -11,7 +11,6 @@ import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Lists;
 import dk.dtu.methods.Tasks;
 import dk.dtu.methods.Users;
-import dk.dtu.shared.Config;
 import dk.dtu.shared.TaskStatus;
 import dk.dtu.ui.Icons;
 import dk.dtu.ui.Tables;
@@ -111,7 +110,7 @@ public class D_TodoListView {
         // Apply per-list stored column settings async
         new Thread(() -> {
             try {
-                String json = Lists.getTaskColumnsJsonForList(Config.getTodoListsUri(), listId);
+                String json = Lists.getTaskColumnsJsonForList(listId);
                 List<String> ids = parseColumnIds(json);
                 List<Column<Helpers.TaskEntry>> desired = filterTaskColumnsByIds(allTaskColumns, ids);
                 Platform.runLater(() -> rebuildTable(desired));
@@ -192,8 +191,7 @@ public class D_TodoListView {
 
         List<String> orderedIds = ensurePinnedTaskColumnOrder(Tables.columnOrder(table));
         try {
-            Lists.setTaskColumnsForList(Config.getRequestsUri(), Config.getResponsesUri(),
-                    listId, GSON.toJson(orderedIds));
+            Lists.setTaskColumnsForList(listId, GSON.toJson(orderedIds));
         } catch (Exception ignored) {
             // local write; ignore failures rather than break the view
         }
@@ -259,7 +257,7 @@ public class D_TodoListView {
 
             new Thread(() -> {
                 try {
-                    Tasks.renameTask(Config.getRequestsUri(), Config.getResponsesUri(), item.listId, item.id, trimmed);
+                    Tasks.renameTask(item.listId, item.id, trimmed);
                     Platform.runLater(this::reloadTasks);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -282,7 +280,7 @@ public class D_TodoListView {
         Helpers.TaskEntry selected = (table != null) ? table.getSelectionModel().getSelectedItem() : null;
         final String previouslySelectedId = (selected != null) ? selected.id : null;
 
-        Tasks.loadTasksForList(Config.getTasksUri(), listId, entries -> {
+        Tasks.loadTasksForList(listId, entries -> {
             allTasks = (entries != null) ? entries : List.of();
             applyTaskFilters();
 
@@ -364,7 +362,7 @@ public class D_TodoListView {
         ComboBox<String> ownerCombo = new ComboBox<>();
         ownerCombo.setPrefWidth(FILTER_CONTROL_WIDTH);
         ownerCombo.setMinWidth(FILTER_CONTROL_WIDTH);
-        Users.loadUsersIntoComboBox(ownerCombo, Config.getUsersUri(), true);
+        Users.loadUsersIntoComboBox(ownerCombo, true);
         ownerCombo.setValue(ownerFilter != null ? ownerFilter : "All");
 
         TextField yearField = new TextField(yearFilter != null ? Integer.toString(yearFilter) : "");
@@ -520,14 +518,7 @@ public class D_TodoListView {
 
             new Thread(() -> {
                 try {
-                    Tasks.addTask(
-                            Config.getRequestsUri(),
-                            Config.getResponsesUri(),
-                            listId,
-                            name,
-                            "",
-                            ""
-                    );
+                    Tasks.addTask(listId, name, "", "");
                     Platform.runLater(this::reloadTasks);
                 } catch (Exception ex) {
                     System.out.println("[CLIENT] ERROR creating task:");
@@ -611,7 +602,7 @@ public class D_TodoListView {
         List<String> orderedIds = ordered.stream().map(e -> e.id).toList();
         new Thread(() -> {
             try {
-                Tasks.setTaskOrderBulk(Config.getRequestsUri(), Config.getResponsesUri(), listId, orderedIds);
+                Tasks.setTaskOrderBulk(listId, orderedIds);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -784,7 +775,7 @@ public class D_TodoListView {
 
             new Thread(() -> {
                 try {
-                    Lists.setTaskColumnsForList(Config.getRequestsUri(), Config.getResponsesUri(), listId, json);
+                    Lists.setTaskColumnsForList(listId, json);
                     List<Column<Helpers.TaskEntry>> desired = filterTaskColumnsByIds(all, selectedIds);
                     Platform.runLater(() -> rebuildTable(desired));
                 } catch (Exception ex) {

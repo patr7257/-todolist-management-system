@@ -3,7 +3,6 @@ package dk.dtu.collumns;
 import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Lists;
 import dk.dtu.methods.Users;
-import dk.dtu.shared.Config;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -74,7 +73,7 @@ public class ListOwnerColumn implements Column<Helpers.ListEntry> {
         ownerCombo.getButtonCell().setMaxHeight(CELL_HEIGHT);
         ownerCombo.getButtonCell().setStyle("-fx-padding: 0 8 0 8;");
 
-        Users.loadUsersIntoComboBox(ownerCombo, Config.getUsersUri(), true);
+        Users.loadUsersIntoComboBox(ownerCombo, true);
 
         ownerCombo.setOnAction(evt -> {
             Helpers.ListEntry item = ctx.currentItem().get();
@@ -96,9 +95,9 @@ public class ListOwnerColumn implements Column<Helpers.ListEntry> {
             new Thread(() -> {
                 try {
                     if (wantsAll) {
-                        Lists.clearListOwner(Config.getRequestsUri(), Config.getResponsesUri(), item.id);
+                        Lists.clearListOwner(item.id);
                     } else {
-                        Lists.setListOwner(Config.getRequestsUri(), Config.getResponsesUri(), item.id, cleanOwner);
+                        Lists.setListOwner(item.id, cleanOwner);
                     }
                     Platform.runLater(() -> {
                         ownerCombo.setDisable(false);

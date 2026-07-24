@@ -54,8 +54,8 @@ jobs:
 
       # --win-upgrade-uuid is a PERMANENT upgrade code and must never change:
       # in-place upgrades are matched by it, so changing it orphans installed copies.
-      # -Dtodolist.server.ip default comes from the TODOLIST_SERVER_HOST repo
-      # variable (falls back to 127.0.0.1); the runtime connect dialog overrides it.
+      # -Dtodolist.api.url default comes from the TODOLIST_API_URL repo variable
+      # (falls back to the public production API); the connect dialog overrides it.
       - name: Create Windows Client Installer
         shell: cmd
         run: |
@@ -74,8 +74,7 @@ jobs:
             --win-shortcut ^
             --icon client/src/main/resources/Icons/appicon.ico ^
             --win-upgrade-uuid c70294f3-9868-42a9-9ffc-7c3d80b71a4e ^
-            --java-options "-Dtodolist.server.ip=${{ vars.TODOLIST_SERVER_HOST || '127.0.0.1' }}" ^
-            --java-options "-Dtodolist.port=9001" ^
+            --java-options "-Dtodolist.api.url=${{ vars.TODOLIST_API_URL || 'https://api.todolist.patrickrobel.dk' }}" ^
             --java-options "-Dtodolist.version=${{ steps.ver.outputs.version }}" ^
             --java-options "--add-opens" ^
             --java-options "javafx.controls/javafx.scene.control.skin=ALL-UNNAMED" ^
@@ -153,8 +152,8 @@ jobs:
 
       # --mac-package-identifier is a PERMANENT bundle identifier and must never
       # change: it is how macOS tracks in-place upgrades of the same app.
-      # -Dtodolist.server.ip default comes from the TODOLIST_SERVER_HOST repo
-      # variable (falls back to 127.0.0.1); the runtime connect dialog overrides it.
+      # -Dtodolist.api.url default comes from the TODOLIST_API_URL repo variable
+      # (falls back to the public production API); the connect dialog overrides it.
       - name: Create macOS Client DMG
         run: |
           jpackage \
@@ -170,8 +169,7 @@ jobs:
             --add-modules java.base,java.desktop,java.logging,java.naming,java.sql,java.xml,java.management,java.instrument,java.prefs,java.scripting,jdk.unsupported,jdk.jfr,jdk.crypto.ec,java.net.http,jdk.charsets,java.datatransfer,javafx.base,javafx.graphics,javafx.controls,javafx.fxml \
             --icon TodoList.icns \
             --mac-package-identifier com.patr7257.todolist.client \
-            --java-options "-Dtodolist.server.ip=${{ vars.TODOLIST_SERVER_HOST || '127.0.0.1' }}" \
-            --java-options "-Dtodolist.port=9001" \
+            --java-options "-Dtodolist.api.url=${{ vars.TODOLIST_API_URL || 'https://api.todolist.patrickrobel.dk' }}" \
             --java-options "-Dtodolist.version=${{ steps.ver.outputs.version }}" \
             --java-options "--add-opens" \
             --java-options "javafx.controls/javafx.scene.control.skin=ALL-UNNAMED" \

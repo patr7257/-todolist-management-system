@@ -1,9 +1,9 @@
 Param(
   [string]$Version = "1.0.0",
   [ValidateSet("msi","exe")][string]$Type = "msi",
-  # Default server host baked into the client build. The runtime connect dialog
-  # still overrides this, so 127.0.0.1 stays safe as a default.
-  [string]$ServerHost = "127.0.0.1"
+  # Default API base URL baked into the client build. The runtime connect dialog
+  # still overrides this, so the public production API stays safe as a default.
+  [string]$ApiUrl = "https://api.todolist.patrickrobel.dk"
 )
 
 # Permanent Windows upgrade code. This MUST never change: in-place upgrades
@@ -237,8 +237,7 @@ $clientArgs = @(
   "--win-shortcut",
   "--icon", "client\src\main\resources\Icons\appicon.ico",
   "--win-upgrade-uuid", $ClientUpgradeUuid,
-  "--java-options", "-Dtodolist.server.ip=$ServerHost",
-  "--java-options", "-Dtodolist.port=9001",
+  "--java-options", "-Dtodolist.api.url=$ApiUrl",
   "--java-options", "-Dtodolist.version=$Version",
   "--java-options", "--add-opens",
   "--java-options", "javafx.controls/javafx.scene.control.skin=ALL-UNNAMED"

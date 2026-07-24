@@ -2,7 +2,6 @@ package dk.dtu.collumns;
 
 import dk.dtu.methods.Helpers;
 import dk.dtu.methods.Tasks;
-import dk.dtu.shared.Config;
 import dk.dtu.ui.Icons;
 import javafx.application.Platform;
 import javafx.scene.Node;
@@ -62,7 +61,7 @@ public class TaskDeleteColumn implements Column<Helpers.TaskEntry> {
                 deleteButton.setDisable(true);
                 new Thread(() -> {
                     try {
-                        Tasks.deleteTask(Config.getRequestsUri(), Config.getResponsesUri(), item.id);
+                        Tasks.deleteTask(item.id);
                         Platform.runLater(() -> {
                             deleteButton.setDisable(false);
                             if (ctx.refresh() != null) {

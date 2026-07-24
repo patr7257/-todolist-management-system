@@ -1,10 +1,7 @@
 package dk.dtu;
 
 import atlantafx.base.theme.Styles;
-import dk.dtu.methods.DataManagement;
-import dk.dtu.shared.Config;
 import dk.dtu.ui.Icons;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
@@ -13,10 +10,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 import org.kordamp.ikonli.javafx.FontIcon;
-
-import java.io.File;
 
 /**
  * Sidebar component that persists across all scenes
@@ -30,8 +24,6 @@ public class Sidebar extends VBox {
     private Button columnFilterButton;
     private Button listFilterButton;
     private Button settingsButton;
-    private Button saveButton;
-    private Button loadButton;
     private Button backButton;
     
     private boolean isDarkMode = false;
@@ -73,20 +65,12 @@ public class Sidebar extends VBox {
         settingsButton = createIconButton(Icons.settings(), "Settings");
         settingsButton.setOnAction(e -> showSettingsDialog());
 
-        // Save button (export data)
-        saveButton = createIconButton(Icons.save(), "Save/Export");
-        saveButton.setOnAction(e -> showSaveDialog());
-
-        // Load button (import data)
-        loadButton = createIconButton(Icons.load(), "Load Files");
-        loadButton.setOnAction(e -> showLoadDialog());
-
         // Back button (always last)
         backButton = createIconButton(Icons.back(), "Go Back");
         backButton.setVisible(false); // Hidden by default
 
-        // Add buttons in order: Home, Theme, Column filter, List filter, Save, Load, Settings, Back
-        this.getChildren().addAll(homeButton, themeToggleButton, columnFilterButton, listFilterButton, saveButton, loadButton, settingsButton, backButton);
+        // Add buttons in order: Home, Theme, Column filter, List filter, Settings, Back
+        this.getChildren().addAll(homeButton, themeToggleButton, columnFilterButton, listFilterButton, settingsButton, backButton);
     }
     
     private Button createIconButton(FontIcon graphic, String tooltipText) {
@@ -141,135 +125,6 @@ public class Sidebar extends VBox {
         } else {
             // Not logged in - go to welcome screen
             navigator.showWelcome();
-        }
-    }
-    
-    private void showSaveDialog() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Session Data");
-        fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("JSON Files", "*.json")
-        );
-        fileChooser.setInitialFileName("todolist-session.json");
-        
-        File file = fileChooser.showSaveDialog(this.getScene().getWindow());
-        if (file != null) {
-            String filePath = file.getAbsolutePath();
-            
-            // Show loading indicator
-            Alert loadingAlert = new Alert(Alert.AlertType.INFORMATION);
-            prepare(loadingAlert);
-            loadingAlert.setTitle("Exporting");
-            loadingAlert.setHeaderText("Exporting session data...");
-            loadingAlert.setContentText("Please wait...");
-            loadingAlert.show();
-            
-            // Export in background thread
-            new Thread(() -> {
-                DataManagement.exportSession(
-                    Config.getRequestsUri(),
-                    Config.getResponsesUri(),
-                    filePath,
-                    (message) -> Platform.runLater(() -> {
-                        loadingAlert.close();
-                        Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
-                        prepare(successAlert);
-                        successAlert.setTitle("Export Successful");
-                        successAlert.setHeaderText("Session data exported");
-                        successAlert.setContentText("File saved to:\n" + filePath);
-                        successAlert.showAndWait();
-                    }),
-                    (error) -> Platform.runLater(() -> {
-                        loadingAlert.close();
-                        Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-                        prepare(errorAlert);
-                        errorAlert.setTitle("Export Failed");
-                        errorAlert.setHeaderText("Could not export session");
-                        errorAlert.setContentText(error);
-                        errorAlert.showAndWait();
-                    })
-                );
-            }, "export-thread").start();
-        }
-    }
-    
-    private void showLoadDialog() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Load Session Data");
-        fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("JSON Files", "*.json")
-        );
-        
-        File file = fileChooser.showOpenDialog(this.getScene().getWindow());
-        if (file != null) {
-            String filePath = file.getAbsolutePath();
-            
-            // Ask user: Merge or Replace?
-            Alert modeAlert = new Alert(Alert.AlertType.CONFIRMATION);
-            prepare(modeAlert);
-            modeAlert.setTitle("Import Mode");
-            modeAlert.setHeaderText("Choose import mode");
-            modeAlert.setContentText("File: " + file.getName() + "\n\n" +
-                    "REPLACE: Remove all current data and load the file (no duplicates)\n\n" +
-                    "MERGE: Keep current data and add new items from the file (duplicates are skipped)\n\n" +
-                    "Which mode do you want to use?");
-            
-            ButtonType replaceButton = new ButtonType("Replace");
-            ButtonType mergeButton = new ButtonType("Merge");
-            ButtonType cancelButton = ButtonType.CANCEL;
-            
-            modeAlert.getButtonTypes().setAll(replaceButton, mergeButton, cancelButton);
-            
-            modeAlert.showAndWait().ifPresent(response -> {
-                if (response == cancelButton) {
-                    return;
-                }
-                
-                String mode = (response == mergeButton) ? "merge" : "replace";
-                String actionDesc = (response == mergeButton) ? "Merging" : "Replacing";
-                
-                // Show loading indicator
-                Alert loadingAlert = new Alert(Alert.AlertType.INFORMATION);
-                prepare(loadingAlert);
-                loadingAlert.setTitle(actionDesc);
-                loadingAlert.setHeaderText(actionDesc + " session data...");
-                loadingAlert.setContentText("Please wait...");
-                loadingAlert.show();
-                
-                // Import in background thread
-                new Thread(() -> {
-                    DataManagement.importSession(
-                        Config.getRequestsUri(),
-                        Config.getResponsesUri(),
-                        filePath,
-                        mode,
-                        (message) -> Platform.runLater(() -> {
-                            loadingAlert.close();
-                            Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
-                            prepare(successAlert);
-                            successAlert.setTitle("Import Successful");
-                            successAlert.setHeaderText("Session data " + (mode.equals("merge") ? "merged" : "imported"));
-                            successAlert.setContentText("Data loaded from:\n" + filePath + "\n\n" +
-                                    "Please refresh your views to see the new data.");
-                            successAlert.showAndWait();
-                            
-                            // Navigate to main menu to force refresh
-                            if (navigator.getCurrentUser() != null) {
-                                navigator.showMainMenu();
-                            }
-                        }),
-                        (error) -> Platform.runLater(() -> {
-                            loadingAlert.close();
-                            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-                            prepare(errorAlert);
-                            errorAlert.setTitle("Import Failed");
-                            errorAlert.setHeaderText("Could not import session");
-                            errorAlert.setContentText(error);
-                            errorAlert.showAndWait();
-                        })
-                    );
-                }, "import-thread").start();
-            });
         }
     }
     

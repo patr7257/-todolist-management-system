@@ -9,13 +9,11 @@ import dk.dtu.methods.Lists;
  * Unit tests for Lists input validation.
  */
 public class ListsTest {
-    
+
     @Test
     public void testCreateTodoListRejectsEmptyName() {
         assertThrows(IllegalArgumentException.class, () -> {
             Lists.createTodoList(
-                    "jndi://requests",
-                    "jndi://responses",
                     "   ",  // invalid (blank)
                     "alice"
             );
@@ -26,8 +24,6 @@ public class ListsTest {
     public void testCreateTodoListRejectsNullName() {
         assertThrows(IllegalArgumentException.class, () -> {
             Lists.createTodoList(
-                    "jndi://requests",
-                    "jndi://responses",
                     null,   // invalid
                     "alice"
             );
@@ -38,8 +34,6 @@ public class ListsTest {
     public void testDeleteTodoListRejectsEmptyId() {
         assertThrows(IllegalArgumentException.class, () -> {
             Lists.deleteTodoList(
-                    "jndi://requests",
-                    "jndi://responses",
                     ""     // invalid
             );
         });
@@ -49,8 +43,6 @@ public class ListsTest {
     public void testDeleteTodoListRejectsNullId() {
         assertThrows(IllegalArgumentException.class, () -> {
             Lists.deleteTodoList(
-                    "jndi://requests",
-                    "jndi://responses",
                     null   // invalid
             );
         });
@@ -61,35 +53,35 @@ public class ListsTest {
     @Test
     public void testSetListOwnerRejectsBlankOwner() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Lists.setListOwner("req", "resp", "list1", "   ");
+            Lists.setListOwner("list1", "   ");
         });
     }
 
     @Test
     public void testSetListPriorityRejectsBlankId() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Lists.setListPriority("req", "resp", "   ", 1);
+            Lists.setListPriority("   ", 1);
         });
     }
 
     @Test
     public void testSetListYearRejectsNullId() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Lists.setListYear("req", "resp", null, 2027);
+            Lists.setListYear(null, 2027);
         });
     }
 
     @Test
     public void testSetListDescriptionRejectsBlankId() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Lists.setListDescription("req", "resp", "", "some notes");
+            Lists.setListDescription("", "some notes");
         });
     }
 
     @Test
     public void testClearListOwnerRejectsNullId() {
         assertThrows(IllegalArgumentException.class, () -> {
-            Lists.clearListOwner("req", "resp", null);
+            Lists.clearListOwner(null);
         });
     }
 }

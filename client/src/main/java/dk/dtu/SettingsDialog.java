@@ -2,7 +2,6 @@ package dk.dtu;
 
 import atlantafx.base.theme.Styles;
 import dk.dtu.methods.Users;
-import dk.dtu.shared.Config;
 import dk.dtu.update.AppVersion;
 import dk.dtu.update.ReleaseInfo;
 import dk.dtu.update.UpdateChecker;
@@ -358,7 +357,7 @@ public class SettingsDialog extends Dialog<ButtonType> {
     private void loadUsersIntoListView(ListView<String> listView) {
         new Thread(() -> {
             try {
-                List<String> users = Users.getUsersCached(Config.getUsersUri());
+                List<String> users = Users.getUsersCached();
 
                 List<String> usernames = new ArrayList<>();
                 for (String username : users) {
@@ -380,7 +379,7 @@ public class SettingsDialog extends Dialog<ButtonType> {
     private void loadUsersIntoCombo(ComboBox<String> combo) {
         new Thread(() -> {
             try {
-                List<String> usernames = new ArrayList<>(Users.getUsersCached(Config.getUsersUri()));
+                List<String> usernames = new ArrayList<>(Users.getUsersCached());
 
                 String currentValue = combo.getValue();
                 Platform.runLater(() -> {
@@ -417,7 +416,7 @@ public class SettingsDialog extends Dialog<ButtonType> {
             
             new Thread(() -> {
                 try {
-                    Users.createNewUser(trimmedUsername, Config.getUsersUri(), 
+                    Users.createNewUser(trimmedUsername,
                         (message) -> Platform.runLater(() -> {
                             showAlert("Success", message);
                             loadUsersIntoListView(listView);
@@ -525,7 +524,7 @@ public class SettingsDialog extends Dialog<ButtonType> {
             
             new Thread(() -> {
                 try {
-                    Users.deleteUser(Config.getRequestsUri(), Config.getResponsesUri(), username);
+                    Users.deleteUser(username);
                     Platform.runLater(() -> {
                         showAlert("Success", "User '" + username + "' was successfully deleted.");
                         loadUsersIntoListView(listView);
